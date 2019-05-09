@@ -1,0 +1,2 @@
+benchmark_config_directory: $(find eurobench_benchmark_server)/src/benchmark_config
+benchmark_output_directory: "~/eurobench_output"
