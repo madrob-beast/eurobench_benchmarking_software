@@ -1,7 +1,7 @@
 EUROBENCH Benchmark Server
 =================================================
 
-Benchmark server and benchmark scripts for the EUROBENCH platform.
+Benchmark server and benchmark scripts for the EUROBENCH framework.
 
 ## Installation
 
