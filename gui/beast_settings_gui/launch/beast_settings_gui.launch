@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <node pkg="beast_settings_gui" type="beast_settings_gui" name="beast_settings_gui_node"
+        output="screen">
+  </node>
+</launch>

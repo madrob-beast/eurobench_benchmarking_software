@@ -1,0 +1,12 @@
+<launch>
+  <rosparam file="$(find eurobench_benchmark_server)/config/general.yaml" command="load" subst_value="true" />
+
+  <!-- Only for testing -->
+  <node pkg="rosbag" type="play" name="rosbag" args="-l $(find eurobench_benchmark_server)/sensor_bags/door_laser_off_on_off.bag" />
+
+  <node name="eurobench_benchmark_server" pkg="eurobench_benchmark_server" type="benchmark_server.py" output="screen">
+    <param name="benchmark_group" value="MADROB" />
+  </node>
+  <include file="$(find benchmark_gui)/launch/madrob_gui.launch" />
+
+</launch>

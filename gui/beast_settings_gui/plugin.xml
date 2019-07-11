@@ -1,0 +1,18 @@
+<library path="src">
+  <class name="beast_settings_gui" type="beast_settings_gui.beast_settings_gui.beast_settings_gui"
+         base_class_type="rqt_gui_py::Plugin">
+    <description>
+      A GUI plugin to ...
+    </description>
+    <qtgui>
+      <group>
+        <label>New Group</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to...</statustip>
+      </group>
+      <label>RQT Plugin beast_settings_gui</label>
+      <icon type="theme">image-x-generic</icon>
+      <statustip>A GUI plugin to ...</statustip>
+    </qtgui>
+  </class>
+</library>

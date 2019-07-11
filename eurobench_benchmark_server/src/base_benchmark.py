@@ -20,8 +20,7 @@ class BaseBenchmark(object):
 
         # Load config from yaml file
         config_dir = rospy.get_param('benchmark_config_directory')
-        config_filepath = path.join(
-            config_dir, '%s.yaml' % (self.benchmark_code))
+        config_filepath = path.join(config_dir, '%s.yaml' % (self.benchmark_code))
 
         with open(config_filepath) as config_file:
             self.config = yaml.load(config_file)

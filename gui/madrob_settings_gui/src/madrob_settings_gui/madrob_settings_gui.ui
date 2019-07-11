@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>madrob_settings_guiWidget</class>
+ <widget class="QWidget" name="madrob_settings_guiWidget">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>527</width>
+    <height>277</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>madrob_settings_gui</string>
+  </property>
+  <widget class="QSlider" name="stiffness_slider">
+   <property name="geometry">
+    <rect>
+     <x>165</x>
+     <y>90</y>
+     <width>286</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="maximum">
+    <number>50</number>
+   </property>
+   <property name="value">
+    <number>25</number>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
+  <widget class="QLabel" name="stiffness_label">
+   <property name="geometry">
+    <rect>
+     <x>15</x>
+     <y>85</y>
+     <width>121</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>13</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>Door Stiffness</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="offset_label">
+   <property name="geometry">
+    <rect>
+     <x>15</x>
+     <y>160</y>
+     <width>126</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>13</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>Obstacle Offset</string>
+   </property>
+  </widget>
+  <widget class="QSlider" name="offset_slider">
+   <property name="geometry">
+    <rect>
+     <x>165</x>
+     <y>165</y>
+     <width>286</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="maximum">
+    <number>40</number>
+   </property>
+   <property name="value">
+    <number>20</number>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
+  <widget class="QLabel" name="stiffness_value_label">
+   <property name="geometry">
+    <rect>
+     <x>470</x>
+     <y>90</y>
+     <width>46</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>25 N</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="offset_value_label">
+   <property name="geometry">
+    <rect>
+     <x>470</x>
+     <y>165</y>
+     <width>51</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>20 deg</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

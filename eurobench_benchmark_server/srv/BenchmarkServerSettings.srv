@@ -1,0 +1,5 @@
+---
+string[] robot_names
+string[] benchmark_ids
+string[] benchmark_descriptions
+int16[] benchmark_timeouts

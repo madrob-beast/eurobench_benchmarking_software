@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package format="2">
+  <name>benchmark_gui</name>
+  <version>0.0.0</version>
+  <description>benchmark_gui provides a GUI plugin to run EUROBENCH benchmarks MADROB and BEAST</description>
+
+  <maintainer email="95joaopereira@gmail.com">João Manuel Pereira</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rospy</build_depend>
+  <build_depend>rqt_gui_py</build_depend>
+  <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>eurobench_benchmark_server</depend>
+
+
+  <export>
+    <rqt_gui plugin="${prefix}/plugin.xml"/>
+  </export>
+</package>

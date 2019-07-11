@@ -5,3 +5,4 @@ time timestamp
 uint8 status
 uint16 current_benchmark_seconds_left
 string current_benchmark_info
+string last_benchmark_info

@@ -1,0 +1,201 @@
+{
+  "keys": {},
+  "groups": {
+    "pluginmanager": {
+      "keys": {
+        "running-plugins": {
+          "type": "repr",
+          "repr": "{u'beast_settings_gui/beast_settings_gui': [1], u'benchmark_gui/BenchmarkGui': [1]}"
+        }
+      },
+      "groups": {
+        "plugin__beast_settings_gui__beast_settings_gui__1": {
+          "keys": {},
+          "groups": {
+            "dock_widget__BEAST Settings": {
+              "keys": {
+                "dockable": {
+                  "type": "repr",
+                  "repr": "True"
+                },
+                "parent": {
+                  "type": "repr",
+                  "repr": "None"
+                },
+                "dock_widget_title": {
+                  "type": "repr",
+                  "repr": "u'BEAST Settings'"
+                }
+              },
+              "groups": {}
+            },
+            "dock_widget__beast_settings_guiUi": {
+              "keys": {
+                "dockable": {
+                  "type": "repr",
+                  "repr": "True"
+                },
+                "parent": {
+                  "type": "repr",
+                  "repr": "None"
+                },
+                "dock_widget_title": {
+                  "type": "repr",
+                  "repr": "u'beast_settings_gui'"
+                }
+              },
+              "groups": {}
+            }
+          }
+        },
+        "plugin__rqt_roah_rsbb__LogDisplay__1": {
+          "keys": {},
+          "groups": {
+            "dock_widget__LogDisplay": {
+              "keys": {
+                "dockable": {
+                  "type": "repr",
+                  "repr": "u'true'"
+                },
+                "parent": {
+                  "type": "repr",
+                  "repr": "None"
+                },
+                "dock_widget_title": {
+                  "type": "repr",
+                  "repr": "u'Log'"
+                }
+              },
+              "groups": {}
+            }
+          }
+        },
+        "plugin__madrob_settings_gui__madrob_settings_gui__1": {
+          "keys": {},
+          "groups": {
+            "dock_widget__MADROB Settings": {
+              "keys": {
+                "dockable": {
+                  "type": "repr",
+                  "repr": "True"
+                },
+                "parent": {
+                  "type": "repr",
+                  "repr": "None"
+                },
+                "dock_widget_title": {
+                  "type": "repr",
+                  "repr": "u'MADROB Settings'"
+                }
+              },
+              "groups": {}
+            },
+            "dock_widget__madrob_settings_guiUi": {
+              "keys": {
+                "dockable": {
+                  "type": "repr",
+                  "repr": "True"
+                },
+                "parent": {
+                  "type": "repr",
+                  "repr": "None"
+                },
+                "dock_widget_title": {
+                  "type": "repr",
+                  "repr": "u'madrob_settings_gui'"
+                }
+              },
+              "groups": {}
+            }
+          }
+        },
+        "plugin__madrob_settings_gui__madrob_settings_gui__2": {
+          "keys": {},
+          "groups": {
+            "dock_widget__MADROB Settings": {
+              "keys": {
+                "dockable": {
+                  "type": "repr",
+                  "repr": "True"
+                },
+                "parent": {
+                  "type": "repr",
+                  "repr": "None"
+                },
+                "dock_widget_title": {
+                  "type": "repr",
+                  "repr": "u'MADROB Settings'"
+                }
+              },
+              "groups": {}
+            },
+            "dock_widget__madrob_settings_guiUi": {
+              "keys": {
+                "dockable": {
+                  "type": "repr",
+                  "repr": "True"
+                },
+                "parent": {
+                  "type": "repr",
+                  "repr": "None"
+                },
+                "dock_widget_title": {
+                  "type": "repr",
+                  "repr": "u'madrob_settings_gui (2)'"
+                }
+              },
+              "groups": {}
+            }
+          }
+        },
+        "plugin__benchmark_gui__BenchmarkGui__1": {
+          "keys": {},
+          "groups": {
+            "dock_widget__EUROBENCH Benchmark Control": {
+              "keys": {
+                "dockable": {
+                  "type": "repr",
+                  "repr": "True"
+                },
+                "parent": {
+                  "type": "repr",
+                  "repr": "None"
+                },
+                "dock_widget_title": {
+                  "type": "repr",
+                  "repr": "u'EUROBENCH Benchmark Control'"
+                }
+              },
+              "groups": {}
+            }
+          }
+        }
+      }
+    },
+    "mainwindow": {
+      "keys": {
+        "geometry": {
+          "type": "repr(QByteArray.hex)",
+          "repr(QByteArray.hex)": "QtCore.QByteArray('01d9d0cb0002000000000000000000000000077f00000407000000000000001e0000077f0000040700000000000000000780')",
+          "pretty-print": "                         "
+        },
+        "state": {
+          "type": "repr(QByteArray.hex)",
+          "repr(QByteArray.hex)": "QtCore.QByteArray('000000ff00000000fd000000010000000300000780000003befc0100000002fc00000000000007800000015800fffffffc0200000005fb0000007600620065006e00630068006d00610072006b005f006700750069005f005f00420065006e00630068006d00610072006b004700750069005f005f0031005f005f004500550052004f00420045004e00430048002000420065006e00630068006d00610072006b00200043006f006e00740072006f006c01000000160000028d0000001500fffffffb0000007200620065006100730074005f00730065007400740069006e00670073005f006700750069005f005f00620065006100730074005f00730065007400740069006e00670073005f006700750069005f005f0031005f005f00420045004100530054002000530065007400740069006e0067007301000002a90000012b0000001500fffffffb0000007e00620065006100730074005f00730065007400740069006e00670073005f006700750069005f005f00620065006100730074005f00730065007400740069006e00670073005f006700750069005f005f0031005f005f00620065006100730074005f00730065007400740069006e00670073005f0067007500690055006901000002ad000001270000000000000000fc000002a50000012f0000000000fffffffc0100000002fb00000078006d006100640072006f0062005f00730065007400740069006e00670073005f006700750069005f005f006d006100640072006f0062005f00730065007400740069006e00670073005f006700750069005f005f0031005f005f004d004100440052004f0042002000530065007400740069006e006700730100000000000007800000000000000000fb00000078006d006100640072006f0062005f00730065007400740069006e00670073005f006700750069005f005f006d006100640072006f0062005f00730065007400740069006e00670073005f006700750069005f005f0032005f005f004d004100440052004f0042002000530065007400740069006e0067007301000003db000003a50000000000000000fc000002c6000001100000000000fffffffc0100000002fb00000084006d006100640072006f0062005f00730065007400740069006e00670073005f006700750069005f005f006d006100640072006f0062005f00730065007400740069006e00670073005f006700750069005f005f0031005f005f006d006100640072006f0062005f00730065007400740069006e00670073005f006700750069005500690100000000000003970000000000000000fb00000084006d006100640072006f0062005f00730065007400740069006e00670073005f006700750069005f005f006d006100640072006f0062005f00730065007400740069006e00670073005f006700750069005f005f0032005f005f006d006100640072006f0062005f00730065007400740069006e00670073005f00670075006900550069010000039d000003e30000000000000000fb00000050007200710074005f0072006f00610068005f0072007300620062005f005f004c006f00670044006900730070006c00610079005f005f0031005f005f004c006f00670044006900730070006c0061007901000005aa000001d60000000000000000000007800000000000000004000000040000000800000008fc00000001000000030000000100000036004d0069006e0069006d0069007a006500640044006f0063006b00570069006400670065007400730054006f006f006c0062006100720000000000ffffffff0000000000000000')",
+          "pretty-print": "                     X                                                                                                                                          +                                                                         '                 xmadrob_settings_gui__madrob_settings_gui__1__MADROB Settings          xmadrob_settings_gui__madrob_settings_gui__2__MADROB Settings                                                                                                                                                                                                                                                                                         "
+        }
+      },
+      "groups": {
+        "toolbar_areas": {
+          "keys": {
+            "MinimizedDockWidgetsToolbar": {
+              "type": "repr",
+              "repr": "8"
+            }
+          },
+          "groups": {}
+        }
+      }
+    }
+  }
+}
