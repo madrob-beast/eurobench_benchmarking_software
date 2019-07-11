@@ -8,7 +8,7 @@ Benchmark server and benchmark scripts for the EUROBENCH framework.
 Install the ROS package as usual:
 ```
 cd catkin_workspace/src
-git clone https://github.com/eurobench/eurobench_benchmarking_software.git
+git clone https://github.com/madrob-beast/eurobench_benchmarking_software.git
 cd ../
 catkin_make
 ```
