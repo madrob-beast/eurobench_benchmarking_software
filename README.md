@@ -1,7 +1,7 @@
-EUROBENCH Benchmark Server
+EUROBENCH Benchmark Software
 =================================================
 
-Benchmark server and benchmark scripts for the EUROBENCH framework.
+Benchmark server, benchmark scripts and graphical interface for the MADROB and BEAST benchmarks.
 
 ## Installation
 
