@@ -7,7 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   rqt_gui_cpp
   std_msgs
   sensor_msgs
-
+  eurobench_benchmark_server
 )
 
 catkin_python_setup()

@@ -86,7 +86,7 @@
    <property name="geometry">
     <rect>
      <x>80</x>
-     <y>280</y>
+     <y>232</y>
      <width>116</width>
      <height>36</height>
     </rect>
@@ -107,7 +107,7 @@
    <property name="geometry">
     <rect>
      <x>35</x>
-     <y>330</y>
+     <y>275</y>
      <width>206</width>
      <height>36</height>
     </rect>
@@ -128,7 +128,7 @@
    <property name="geometry">
     <rect>
      <x>75</x>
-     <y>380</y>
+     <y>335</y>
      <width>126</width>
      <height>41</height>
     </rect>
@@ -146,7 +146,7 @@
    <property name="geometry">
     <rect>
      <x>75</x>
-     <y>435</y>
+     <y>390</y>
      <width>126</width>
      <height>41</height>
     </rect>
@@ -164,7 +164,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>500</y>
+     <y>455</y>
      <width>51</width>
      <height>17</height>
     </rect>
@@ -177,7 +177,7 @@
    <property name="geometry">
     <rect>
      <x>65</x>
-     <y>500</y>
+     <y>455</y>
      <width>151</width>
      <height>17</height>
     </rect>
@@ -241,9 +241,6 @@
    </property>
   </widget>
   <widget class="QTextEdit" name="clock_textedit">
-   <property name="readOnly">
-    <bool>true</bool>
-   </property>
    <property name="geometry">
     <rect>
      <x>785</x>
@@ -258,14 +255,14 @@
      <kerning>true</kerning>
     </font>
    </property>
+   <property name="readOnly">
+    <bool>true</bool>
+   </property>
    <property name="plainText">
     <string> 00:00</string>
    </property>
   </widget>
   <widget class="QTextEdit" name="results_textedit">
-   <property name="readOnly">
-    <bool>true</bool>
-   </property>
    <property name="geometry">
     <rect>
      <x>785</x>
@@ -274,7 +271,25 @@
      <height>236</height>
     </rect>
    </property>
+   <property name="readOnly">
+    <bool>true</bool>
+   </property>
   </widget>
+  <zorder>robot_combo</zorder>
+  <zorder>benchmark_combo</zorder>
+  <zorder>robot_label</zorder>
+  <zorder>benchmark_label</zorder>
+  <zorder>benchmark_name_label</zorder>
+  <zorder>start_button</zorder>
+  <zorder>stop_button</zorder>
+  <zorder>server_label</zorder>
+  <zorder>status_label</zorder>
+  <zorder>timeleft_label</zorder>
+  <zorder>results_label</zorder>
+  <zorder>results_detail_label</zorder>
+  <zorder>clock_textedit</zorder>
+  <zorder>results_textedit</zorder>
+  <zorder>robot_name_label</zorder>
  </widget>
  <resources/>
  <connections/>

@@ -13,6 +13,7 @@ from os import path
 from std_srvs.srv import Empty, EmptyResponse
 from eurobench_benchmark_server.srv import *
 from eurobench_benchmark_server.msg import *
+import madrob_door_control
 
 
 class BenchmarkServer(object):
@@ -47,8 +48,6 @@ class BenchmarkServer(object):
             benchmark_code = benchmark_object.benchmark_code
 
             self.scripts[benchmark_code] = benchmark_object
-
-        print(self.scripts)
 
     def start_benchmark_callback(self, request):
         if self.current_benchmark:
@@ -108,6 +107,14 @@ class BenchmarkServer(object):
         response = EmptyResponse()
         return response
 
+    def madrob_settings_callback(self, request):
+        madrob_settings_response = MadrobSettingsResponse()
+
+        # Get names of madrob benchmark types
+        benchmark_names = madrob_door_control.benchmark_types.keys()
+        madrob_settings_response.benchmark_types = benchmark_names
+        return madrob_settings_response
+
     def execute_benchmark(self):
         self.current_benchmark.execute()
         self.current_benchmark.save_result()
@@ -144,6 +151,9 @@ class BenchmarkServer(object):
             'bmserver/settings', BenchmarkServerSettings, self.bmserver_settings_callback)
         self.shutdown_service = rospy.Service(
             'bmserver/shutdown', Empty, self.shutdown_callback)
+        self.madrob_settings_service = rospy.Service(
+            'madrob/settings', MadrobSettings, self.madrob_settings_callback)
+
         self.benchmark_server_state_publisher = rospy.Publisher(
             'bmserver/state', BenchmarkServerState, queue_size=1)
 

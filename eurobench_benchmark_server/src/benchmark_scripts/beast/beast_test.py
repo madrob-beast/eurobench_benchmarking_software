@@ -8,7 +8,7 @@ from std_msgs.msg import Bool
 
 class BenchmarkObject(BaseBenchmark):
 
-    benchmark_code = 'TEST_BENCHMARK_BEAST'
+    benchmark_code = 'BEAST_TEST'
 
     # This benchmark checks the state of a laser sensor (supposedly in a door frame): when it turns on and then off,
     # it is assumed the robot passed through the door. The result is updated, and the benchmark finishes

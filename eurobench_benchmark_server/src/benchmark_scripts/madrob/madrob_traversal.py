@@ -2,22 +2,29 @@
 
 import rospy
 import time
+import madrob_door_control
 from base_benchmark import BaseBenchmark
 from std_msgs.msg import Bool
 
 
 class BenchmarkObject(BaseBenchmark):
 
-    benchmark_code = 'TEST_BENCHMARK_MADROB'
+    benchmark_code = 'MADROB_TRAVERSAL'
 
-    # This benchmark checks the state of a laser sensor (supposedly in a door frame): when it turns on and then off,
-    # it is assumed the robot passed through the door. The result is updated, and the benchmark finishes
+    # In this benchmark, the door is not locked: the robot simply needs to push it open.
+    # No torque or braking is applied to the door.
     def execute(self):
         self.door_obstructed = False
         self.passed_through_door = False
 
-        rospy.Subscriber('/eurobench_sensors/door_laser',
-                         Bool, self.door_laser_callback)
+        # Setup door based on the currently selected benchmark type
+        madrob_door_control.setup_door()
+
+        # TODO: based on a combo box for door mode, setup door with corresponding brake_enabled and LUT.
+
+        # TODO subscribe to IR sensors, OR use madrob_door_control function
+        #rospy.Subscriber('/eurobench_sensors/door_laser',
+        #                 Bool, self.door_laser_callback)
 
         self.result['passed_through_door'] = False
         self.result['score'] = 0
@@ -30,7 +37,6 @@ class BenchmarkObject(BaseBenchmark):
 
                 # Finish benchmark
                 return
-
 
     def door_laser_callback(self, msg):
         if msg.data: # Sensor returned true: door obstructed

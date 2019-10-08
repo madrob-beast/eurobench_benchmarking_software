@@ -174,9 +174,3 @@ class BenchmarkGui(Plugin):
     def restore_settings(self, plugin_settings, instance_settings):
         # Restore intrinsic configuration
         pass
-
-    # def trigger_configuration(self):
-        # Comment in to signal that the plugin has a way to configure
-        # This will enable a setting button (gear icon) in each dock widget
-        # title bar
-        # Usually used to open a modal configuration dialog

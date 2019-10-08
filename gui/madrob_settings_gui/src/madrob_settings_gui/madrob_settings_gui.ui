@@ -9,123 +9,319 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>527</width>
-    <height>277</height>
+    <width>1359</width>
+    <height>389</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>madrob_settings_gui</string>
   </property>
-  <widget class="QSlider" name="stiffness_slider">
+  <widget class="Line" name="line">
    <property name="geometry">
     <rect>
-     <x>165</x>
-     <y>90</y>
-     <width>286</width>
-     <height>21</height>
+     <x>605</x>
+     <y>22</y>
+     <width>16</width>
+     <height>341</height>
     </rect>
-   </property>
-   <property name="maximum">
-    <number>50</number>
-   </property>
-   <property name="value">
-    <number>25</number>
    </property>
    <property name="orientation">
-    <enum>Qt::Horizontal</enum>
+    <enum>Qt::Vertical</enum>
    </property>
   </widget>
-  <widget class="QLabel" name="stiffness_label">
+  <widget class="QLabel" name="benchmark_type_label">
    <property name="geometry">
     <rect>
-     <x>15</x>
-     <y>85</y>
-     <width>121</width>
-     <height>26</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>13</pointsize>
-    </font>
-   </property>
-   <property name="text">
-    <string>Door Stiffness</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="offset_label">
-   <property name="geometry">
-    <rect>
-     <x>15</x>
-     <y>160</y>
-     <width>126</width>
+     <x>100</x>
+     <y>35</y>
+     <width>151</width>
      <height>31</height>
     </rect>
    </property>
    <property name="font">
     <font>
-     <pointsize>13</pointsize>
+     <pointsize>14</pointsize>
     </font>
    </property>
    <property name="text">
-    <string>Obstacle Offset</string>
+    <string>Benchmark type:</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QSlider" name="offset_slider">
+  <widget class="QComboBox" name="benchmark_type_combo">
    <property name="geometry">
     <rect>
-     <x>165</x>
-     <y>165</y>
-     <width>286</width>
-     <height>21</height>
+     <x>265</x>
+     <y>40</y>
+     <width>146</width>
+     <height>25</height>
     </rect>
-   </property>
-   <property name="maximum">
-    <number>40</number>
-   </property>
-   <property name="value">
-    <number>20</number>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
    </property>
   </widget>
-  <widget class="QLabel" name="stiffness_value_label">
+  <widget class="QPushButton" name="show_hide_calib">
    <property name="geometry">
     <rect>
-     <x>470</x>
-     <y>90</y>
-     <width>46</width>
-     <height>17</height>
+     <x>737</x>
+     <y>15</y>
+     <width>166</width>
+     <height>25</height>
     </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>12</pointsize>
-    </font>
    </property>
    <property name="text">
-    <string>25 N</string>
+    <string>Show calibration menu</string>
    </property>
   </widget>
-  <widget class="QLabel" name="offset_value_label">
+  <widget class="QGroupBox" name="calib_groupbox">
    <property name="geometry">
     <rect>
-     <x>470</x>
-     <y>165</y>
-     <width>51</width>
-     <height>17</height>
+     <x>735</x>
+     <y>25</y>
+     <width>506</width>
+     <height>345</height>
     </rect>
    </property>
-   <property name="font">
-    <font>
-     <pointsize>12</pointsize>
-    </font>
+   <property name="title">
+    <string/>
    </property>
-   <property name="text">
-    <string>20 deg</string>
-   </property>
+   <widget class="QLabel" name="calib_loadcell_label">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>25</y>
+      <width>231</width>
+      <height>26</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>13</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Handle Load Cell Calibration</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="calib_loadcell_ccw_button">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>362</x>
+      <y>65</y>
+      <width>89</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Calib. CCW</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="calib_loadcell_cw_button">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>252</x>
+      <y>65</y>
+      <width>89</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Calib. CW</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="calib_weight_label">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>64</y>
+      <width>86</width>
+      <height>26</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Weight (g):</string>
+    </property>
+   </widget>
+   <widget class="Line" name="calib_line_1">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>115</y>
+      <width>346</width>
+      <height>10</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="calib_motor_label">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>183</x>
+      <y>141</y>
+      <width>146</width>
+      <height>26</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>13</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Motor Calibration</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="calib_motor_start">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>174</x>
+      <y>178</y>
+      <width>161</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Start Calibration</string>
+    </property>
+   </widget>
+   <widget class="Line" name="calib_line_2">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>85</x>
+      <y>230</y>
+      <width>346</width>
+      <height>10</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="calib_encoder_label">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>255</y>
+      <width>171</width>
+      <height>26</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>13</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Encoder Calibration</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="calib_encoder_cw">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>290</y>
+      <width>125</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Fully open CW</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="calib_encoder_closed">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>212</x>
+      <y>290</y>
+      <width>88</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Closed</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="calib_encoder_ccw">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>325</x>
+      <y>290</y>
+      <width>121</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Fully open CCW</string>
+    </property>
+   </widget>
+   <widget class="QPlainTextEdit" name="calib_weight_textedit">
+    <property name="geometry">
+     <rect>
+      <x>117</x>
+      <y>65</y>
+      <width>106</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="verticalScrollBarPolicy">
+     <enum>Qt::ScrollBarAlwaysOff</enum>
+    </property>
+   </widget>
   </widget>
+  <zorder>calib_groupbox</zorder>
+  <zorder>line</zorder>
+  <zorder>benchmark_type_label</zorder>
+  <zorder>benchmark_type_combo</zorder>
+  <zorder>show_hide_calib</zorder>
  </widget>
  <resources/>
  <connections/>

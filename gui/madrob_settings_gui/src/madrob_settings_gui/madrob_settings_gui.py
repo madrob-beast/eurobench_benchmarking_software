@@ -3,15 +3,16 @@ import rospy
 
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
-from python_qt_binding.QtWidgets import QWidget, QLabel, QSlider
+from python_qt_binding.QtWidgets import QWidget, QLabel, QComboBox, QGroupBox, QPushButton, QPlainTextEdit
 
-from std_msgs.msg import UInt16
+from std_msgs.msg import String
+from eurobench_benchmark_server.srv import *
 
 
 class madrob_settings_gui(Plugin):
     def __init__(self, context):
         super(madrob_settings_gui, self).__init__(context)
-        # Give QObjects reasonable names
+
         self.setObjectName('MADROB Settings')
 
         self._widget = QWidget()
@@ -20,18 +21,44 @@ class madrob_settings_gui(Plugin):
                                'madrob_settings_gui.ui')
 
         loadUi(ui_file, self._widget)
+
+        self.showing_calibration = False
         
         self._widget.setObjectName('MADROB Settings')
         self._widget.setWindowTitle('MADROB Settings')
 
-        self.stiffness_value_label = self._widget.findChild(QLabel, 'stiffness_value_label')
-        self.offset_value_label = self._widget.findChild(QLabel, 'offset_value_label')
+        self.benchmark_type_combo = self._widget.findChild(QComboBox, 'benchmark_type_combo')
 
-        self.stiffness_slider = self._widget.findChild(QSlider, 'stiffness_slider')
-        self.stiffness_slider.valueChanged.connect(self.update_stiffness)
+        self.calibration_button = self._widget.findChild(QPushButton, 'show_hide_calib')
+        self.calibration_button.clicked.connect(self.toggle_calibration_menu)
 
-        self.offset_slider = self._widget.findChild(QSlider, 'offset_slider')
-        self.offset_slider.valueChanged.connect(self.update_offset)
+        self.calibration_menu = self._widget.findChild(QGroupBox, 'calib_groupbox')
+        self.calibration_menu.hide()
+
+        self.calib_loadcell_cw_button = self._widget.findChild(QPushButton, 'calib_loadcell_cw_button')
+        self.calib_loadcell_cw_button.clicked.connect(self.calibrate_loadcell_cw)
+
+        self.calib_loadcell_ccw_button = self._widget.findChild(QPushButton, 'calib_loadcell_ccw_button')
+        self.calib_loadcell_ccw_button.clicked.connect(self.calibrate_loadcell_ccw)
+
+        self.loadcell_weight_textedit = self._widget.findChild(QPlainTextEdit, 'calib_weight_textedit')
+
+        self.calib_motor_start_button = self._widget.findChild(QPushButton, 'calib_motor_start')
+        self.calib_motor_start_button.clicked.connect(self.start_motor_calibration)
+
+        self.calib_encoder_cw_button = self._widget.findChild(QPushButton, 'calib_encoder_cw')
+        self.calib_encoder_cw_button.clicked.connect(self.calibrate_encoder_cw)
+
+        self.calib_encoder_closed_button = self._widget.findChild(QPushButton, 'calib_encoder_closed')
+        self.calib_encoder_closed_button.clicked.connect(self.calibrate_encoder_closed)
+
+        self.calib_encoder_ccw_button = self._widget.findChild(QPushButton, 'calib_encoder_ccw')
+        self.calib_encoder_ccw_button.clicked.connect(self.calibrate_encoder_ccw)
+
+        get_madrob_settings = rospy.ServiceProxy('madrob/settings', MadrobSettings)
+        madrob_settings = get_madrob_settings()
+
+        self.benchmark_type_combo.addItems(madrob_settings.benchmark_types)
 
         context.add_widget(self._widget)
 
@@ -57,19 +84,55 @@ class madrob_settings_gui(Plugin):
         # title bar
         # Usually used to open a modal configuration dialog
 
-    def update_stiffness(self, value):
-        self.stiffness_value_label.setText(str(value) + ' N')
+    def toggle_calibration_menu(self):
+        if self.showing_calibration:
+            self.calibration_menu.hide()
+            self.calibration_button.setText('Show calibration menu')
+        else:
+            self.calibration_menu.show()
+            self.calibration_button.setText('Hide calibration menu')
+        self.showing_calibration = not self.showing_calibration
 
-    def update_offset(self, value):
-        self.offset_value_label.setText(str(value) + ' deg')
+    def calibrate_loadcell_cw(self):
+        try:
+            weight = -int(round(float(self.loadcell_weight_textedit.toPlainText())))
+        except:
+            print('Error parsing integer for "weight": no calibration done.')
+            return
+
+        # TODO call service 'rosservice call madrob/handle/calibrate sample 160 step 0 force -<weight>'
+
+    def calibrate_loadcell_ccw(self):
+        try:
+            weight = int(round(float(self.loadcell_weight_textedit.toPlainText())))
+        except:
+            print('Error parsing integer for "weight": no calibration done.')
+            return
+
+        # TODO call service 'rosservice call madrob/handle/calibrate sample 160 step 1 force <weight>'
+
+    def start_motor_calibration(self):
+        # TODO start motor calibration procedure
+        pass
+
+    def calibrate_encoder_closed(self):
+        # TODO rosservice call madrob/door/calibrate_position 0
+        pass
+
+    def calibrate_encoder_cw(self):
+        # TODO rosservice call madrob/door/calibrate_position 1
+        pass
+    
+    def calibrate_encoder_ccw(self):
+        # TODO rosservice call madrob/door/calibrate_position 2
+        pass
 
     def run_rospy_node(self):
-        self.door_stiffness_pub = rospy.Publisher('madrob/door_stiffness', UInt16, queue_size=1)
-        self.obstacle_offset_pub = rospy.Publisher('madrob/obstacle_offset', UInt16, queue_size=1)
-        
-        rospy.Timer(rospy.Duration(1), self.publish_settings)
+        self.benchmark_type_service = rospy.Service(
+            'madrob/gui/benchmark_type', MadrobBenchmarkType, self.benchmark_type_callback)
 
-    def publish_settings(self, _):
-        if not rospy.is_shutdown():
-            self.door_stiffness_pub.publish(self.stiffness_slider.value())
-            self.obstacle_offset_pub.publish(self.offset_slider.value())
+    def benchmark_type_callback(self, request):
+        benchmark_type_response = MadrobBenchmarkTypeResponse()
+        benchmark_type_response.benchmark_type = self.benchmark_type_combo.currentText()
+
+        return benchmark_type_response

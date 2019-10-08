@@ -27,6 +27,8 @@ add_service_files(
   StartBenchmark.srv
   StopBenchmark.srv
   BenchmarkServerSettings.srv
+  MadrobSettings.srv
+  MadrobBenchmarkType.srv
 )
 
 ## Generate actions in the 'action' folder
