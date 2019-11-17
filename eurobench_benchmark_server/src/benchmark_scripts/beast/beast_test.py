@@ -16,9 +16,6 @@ class BenchmarkObject(BaseBenchmark):
         self.door_obstructed = False
         self.passed_through_door = False
 
-        rospy.Subscriber('/eurobench_sensors/door_laser',
-                         Bool, self.door_laser_callback)
-
         self.result['passed_through_door'] = False
         self.result['score'] = 0
         while not self.terminated:
@@ -31,6 +28,9 @@ class BenchmarkObject(BaseBenchmark):
                 # Finish benchmark
                 return
 
+    def write_testbed_conf_file(self, testbed_conf):
+        #TODO 
+        pass
 
     def door_laser_callback(self, msg):
         if msg.data: # Sensor returned true: door obstructed

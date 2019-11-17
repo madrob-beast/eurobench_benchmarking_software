@@ -275,6 +275,40 @@
     <bool>true</bool>
    </property>
   </widget>
+  <widget class="QLabel" name="runLabel">
+   <property name="geometry">
+    <rect>
+     <x>16</x>
+     <y>100</y>
+     <width>81</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>Run:</string>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="run_spinbox">
+   <property name="geometry">
+    <rect>
+     <x>111</x>
+     <y>98</y>
+     <width>56</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <number>1</number>
+   </property>
+   <property name="maximum">
+    <number>999</number>
+   </property>
+  </widget>
   <zorder>robot_combo</zorder>
   <zorder>benchmark_combo</zorder>
   <zorder>robot_label</zorder>
@@ -290,6 +324,8 @@
   <zorder>clock_textedit</zorder>
   <zorder>results_textedit</zorder>
   <zorder>robot_name_label</zorder>
+  <zorder>runLabel</zorder>
+  <zorder>run_spinbox</zorder>
  </widget>
  <resources/>
  <connections/>

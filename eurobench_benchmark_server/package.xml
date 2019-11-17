@@ -20,6 +20,8 @@
   <exec_depend>rospy</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <depend>std_srvs</depend>
+  <depend>madrob_msgs</depend>
+  <depend>madrob_srvs</depend>
 
   <export>
     <!-- Other tools can request additional information be placed here -->

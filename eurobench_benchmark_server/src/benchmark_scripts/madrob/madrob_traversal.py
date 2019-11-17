@@ -2,25 +2,29 @@
 
 import rospy
 import time
-import madrob_door_control
+import yaml
+from madrob_door_control import MadrobDoorControl
 from base_benchmark import BaseBenchmark
 from std_msgs.msg import Bool
-
+from os import path
 
 class BenchmarkObject(BaseBenchmark):
 
     benchmark_code = 'MADROB_TRAVERSAL'
 
-    # In this benchmark, the door is not locked: the robot simply needs to push it open.
-    # No torque or braking is applied to the door.
+    # This benchmark script checks if a robot is able to pass through the door. It's valid for any door configuration.
+
     def execute(self):
         self.door_obstructed = False
         self.passed_through_door = False
 
         # Setup door based on the currently selected benchmark type
-        madrob_door_control.setup_door()
+        door_control = MadrobDoorControl()
+        door_control.setup_door()
 
-        # TODO: based on a combo box for door mode, setup door with corresponding brake_enabled and LUT.
+        # Save testbed setup
+        door_params = door_control.get_door_parameters()
+        self.write_testbed_conf_file(door_params)
 
         # TODO subscribe to IR sensors, OR use madrob_door_control function
         #rospy.Subscriber('/eurobench_sensors/door_laser',
@@ -45,3 +49,13 @@ class BenchmarkObject(BaseBenchmark):
             if self.door_obstructed:
                 self.passed_through_door = True
             self.door_obstructed = False
+    
+    def write_testbed_conf_file(self, testbed_conf):
+        output_dir = path.expanduser(rospy.get_param('benchmark_output_directory'))
+
+        subject_number = self.robot_name # TODO this should be a number/id
+        run_number = self.run_number
+        filename = 'subject_%s_door_%d.yaml' % (subject_number, run_number)
+
+        with open(path.join(output_dir, filename), 'w') as outfile:
+            yaml.dump(testbed_conf, outfile, default_flow_style=False)

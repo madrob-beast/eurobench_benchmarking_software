@@ -7,6 +7,7 @@ from python_qt_binding.QtWidgets import QWidget, QLabel, QComboBox, QGroupBox, Q
 
 from std_msgs.msg import String
 from eurobench_benchmark_server.srv import *
+from madrob_srvs.srv import *
 
 
 class madrob_settings_gui(Plugin):
@@ -78,12 +79,6 @@ class madrob_settings_gui(Plugin):
         # v = instance_settings.value(k)
         pass
 
-    # def trigger_configuration(self):
-        # Comment in to signal that the plugin has a way to configure
-        # This will enable a setting button (gear icon) in each dock widget
-        # title bar
-        # Usually used to open a modal configuration dialog
-
     def toggle_calibration_menu(self):
         if self.showing_calibration:
             self.calibration_menu.hide()
@@ -95,12 +90,23 @@ class madrob_settings_gui(Plugin):
 
     def calibrate_loadcell_cw(self):
         try:
-            weight = -int(round(float(self.loadcell_weight_textedit.toPlainText())))
+            weight = int(round(float(self.loadcell_weight_textedit.toPlainText())))
         except:
             print('Error parsing integer for "weight": no calibration done.')
             return
 
-        # TODO call service 'rosservice call madrob/handle/calibrate sample 160 step 0 force -<weight>'
+        calibrate_handle = rospy.ServiceProxy('/' + self.handle_node_name + '/calibrate', CalibrateHandle)
+
+        calibrate_handle_req = CalibrateHandleRequest()
+        calibrate_handle_req.samples = 160
+        calibrate_handle_req.step = 0
+        calibrate_handle_req.force = -weight
+
+        calibrate_handle_res = calibrate_handle(calibrate_handle_req)
+        if calibrate_handle_res.success:
+            rospy.loginfo('Loadcell CW calibrated')
+        else:
+            rospy.logerr('Could not calibrate loadcell CW: %s' % (calibrate_handle_res.message))
 
     def calibrate_loadcell_ccw(self):
         try:
@@ -109,27 +115,50 @@ class madrob_settings_gui(Plugin):
             print('Error parsing integer for "weight": no calibration done.')
             return
 
-        # TODO call service 'rosservice call madrob/handle/calibrate sample 160 step 1 force <weight>'
+        calibrate_handle = rospy.ServiceProxy('/' + self.handle_node_name + '/calibrate', CalibrateHandle)
+
+        calibrate_handle_req = CalibrateHandleRequest()
+        calibrate_handle_req.samples = 160
+        calibrate_handle_req.step = 1
+        calibrate_handle_req.force = weight
+
+        calibrate_handle_res = calibrate_handle(calibrate_handle_req)
+        if calibrate_handle_res.success:
+            rospy.loginfo('Loadcell CCW calibrated')
+        else:
+            rospy.logerr('Could not calibrate loadcell CCW: %s' % (calibrate_handle_res.message))
 
     def start_motor_calibration(self):
         # TODO start motor calibration procedure
         pass
 
     def calibrate_encoder_closed(self):
-        # TODO rosservice call madrob/door/calibrate_position 0
-        pass
+        self.calibrate_encoder(CalibrateDoorPositionRequest.POSITION_ZERO)
 
     def calibrate_encoder_cw(self):
-        # TODO rosservice call madrob/door/calibrate_position 1
-        pass
+        self.calibrate_encoder(CalibrateDoorPositionRequest.POSITION_CW)
     
     def calibrate_encoder_ccw(self):
-        # TODO rosservice call madrob/door/calibrate_position 2
-        pass
+        self.calibrate_encoder(CalibrateDoorPositionRequest.POSITION_CCW)
+
+    def calibrate_encoder(self, position):
+        calibrate_position = rospy.ServiceProxy('/' + self.door_node_name + '/calibrate_position', CalibrateDoorPosition)
+
+        calibrate_position_req = CalibrateDoorPositionRequest()
+        calibrate_position_req.position = position
+        
+        calibrate_position_res = calibrate_position(calibrate_position_req)
+        if calibrate_position_res.success:
+            rospy.loginfo('Door encoder calibrated. Position: %d' % (position))
+        else:
+            rospy.logerr('Could not calibrate door encoder. Position: %d' % (position))
 
     def run_rospy_node(self):
         self.benchmark_type_service = rospy.Service(
             'madrob/gui/benchmark_type', MadrobBenchmarkType, self.benchmark_type_callback)
+
+        self.door_node_name = rospy.get_param('door_node_name')
+        self.handle_node_name = rospy.get_param('handle_node_name')
 
     def benchmark_type_callback(self, request):
         benchmark_type_response = MadrobBenchmarkTypeResponse()

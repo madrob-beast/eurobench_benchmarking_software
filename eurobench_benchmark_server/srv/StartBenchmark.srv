@@ -1,4 +1,5 @@
 string benchmark_code
 string robot_name
+uint16 run_number
 ---
 bool result

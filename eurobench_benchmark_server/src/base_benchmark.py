@@ -12,9 +12,10 @@ from exceptions import NotImplementedError
 
 class BaseBenchmark(object):
 
-    def setup(self, robot_name):
+    def setup(self, robot_name, run_number):
         self.terminated = False
         self.robot_name = robot_name
+        self.run_number = run_number
         self.start_time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
         self.result = {}
 
@@ -33,6 +34,7 @@ class BaseBenchmark(object):
     def get_benchmark_info(self):
         benchmark_info = OrderedDict([
             ('Robot name', self.robot_name),
+            ('Run number', self.run_number),
             ('Benchmark ID', self.benchmark_code),
             ('Start time', self.start_time),
             ('Timed out', self.has_timed_out),
@@ -59,4 +61,7 @@ class BaseBenchmark(object):
         rospy.loginfo(self.get_benchmark_info() + '\n')
 
     def execute(self):
+        raise NotImplementedError()
+
+    def write_testbed_conf_file(self, testbed_conf):
         raise NotImplementedError()

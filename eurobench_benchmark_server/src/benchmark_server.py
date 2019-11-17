@@ -13,7 +13,7 @@ from os import path
 from std_srvs.srv import Empty, EmptyResponse
 from eurobench_benchmark_server.srv import *
 from eurobench_benchmark_server.msg import *
-import madrob_door_control
+from madrob_door_control import MadrobDoorControl
 
 
 class BenchmarkServer(object):
@@ -55,10 +55,10 @@ class BenchmarkServer(object):
                 'Cannot start benchmark: a benchmark is currently running.')
             return StartBenchmarkResponse(False)
 
-        rospy.loginfo('\n---\n STARTING BENCHMARK: %s | Robot name: %s \n---' %
-                      (request.benchmark_code, request.robot_name))
+        rospy.loginfo('\n---\n STARTING BENCHMARK: %s | Robot name: %s | Run %d\n---' %
+                      (request.benchmark_code, request.robot_name, request.run_number))
 
-        self.scripts[request.benchmark_code].setup(request.robot_name)
+        self.scripts[request.benchmark_code].setup(request.robot_name, request.run_number)
         self.current_benchmark = self.scripts[request.benchmark_code]
 
         # Execute benchmark in a new thread
@@ -111,7 +111,7 @@ class BenchmarkServer(object):
         madrob_settings_response = MadrobSettingsResponse()
 
         # Get names of madrob benchmark types
-        benchmark_names = madrob_door_control.benchmark_types.keys()
+        benchmark_names = MadrobDoorControl.BenchmarkTypes.keys()
         madrob_settings_response.benchmark_types = benchmark_names
         return madrob_settings_response
 

@@ -7,6 +7,9 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   std_srvs
   message_generation
+  madrob_msgs
+  madrob_srvs
+  sensor_msgs
 )
 
 catkin_python_setup()
@@ -43,6 +46,8 @@ generate_messages(
   DEPENDENCIES
   std_msgs
   std_srvs
+  madrob_msgs
+  madrob_srvs
 )
 
 ###################################

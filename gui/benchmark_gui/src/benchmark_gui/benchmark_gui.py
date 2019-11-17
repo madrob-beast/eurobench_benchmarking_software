@@ -7,7 +7,7 @@ import rospy
 
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
-from python_qt_binding.QtWidgets import QWidget, QComboBox, QPushButton, QLabel, QTextEdit
+from python_qt_binding.QtWidgets import QWidget, QComboBox, QPushButton, QLabel, QTextEdit, QSpinBox
 from python_qt_binding.QtCore import Qt, pyqtSignal
 from python_qt_binding.QtGui import QPalette
 
@@ -57,6 +57,8 @@ class BenchmarkGui(Plugin):
 
         self.results_detail_label = self._widget.findChild(QLabel, 'results_detail_label')
 
+        self.run_spinbox = self._widget.findChild(QSpinBox, 'run_spinbox')
+
         # Disable start button, set its listener
         self.start_button = self._widget.findChild(QPushButton, 'start_button')
         self.start_button.setEnabled(False)
@@ -96,11 +98,14 @@ class BenchmarkGui(Plugin):
 
         robot_name = self.robot_combo.currentText()
 
+        run_number = self.run_spinbox.value()
+
         start_benchmark = rospy.ServiceProxy('bmserver/start_benchmark', StartBenchmark)
 
         start_request = StartBenchmarkRequest()
         start_request.benchmark_code = benchmark_code
         start_request.robot_name = robot_name
+        start_request.run_number = run_number
 
         start_benchmark(start_request)
 

@@ -6,7 +6,6 @@
 
   <maintainer email="todo@todo.com">todo</maintainer>
   <license>TODO</license>
-  <!-- <url type="website">http://www.bla.com</url> -->
   <author email="todo@todo.com">todo</author>
 
   <buildtool_depend>catkin</buildtool_depend>
@@ -14,7 +13,7 @@
   <build_depend>rospy</build_depend>
   <build_depend>rqt_gui_py</build_depend>
   <depend>std_msgs</depend>
-  <depend>sensor_msgs</depend>
+  <depend>benchmark_gui</depend>
 
 
   <export>
