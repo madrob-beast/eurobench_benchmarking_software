@@ -29,19 +29,16 @@ class MadrobDoorControl:
     # Currently not considering the 'Setpoint brake' mode: using only 'Disabled' or 'LUT control'
     def setup_door(self):
         # Based on the currently selected benchmark type, set the brake_enabled and LUT values
-
-        get_benchmark_type = rospy.ServiceProxy('madrob/gui/benchmark_type', MadrobBenchmarkType)
-
-        door_node_name = rospy.get_param('door_node_name')
-
-        set_door_mode = rospy.ServiceProxy('/' + door_node_name + '/set_mode', SetDoorControllerMode)
-        set_door_lut = rospy.ServiceProxy('/' + door_node_name + '/set_lut', SetDoorControllerLUT)
-
-        response = get_benchmark_type()
+        get_benchmark_type_name = rospy.ServiceProxy('madrob/gui/benchmark_type', MadrobBenchmarkType)
+        response = get_benchmark_type_name()
         self.benchmark_type_name = response.benchmark_type
         self.benchmark_type = self.BenchmarkTypes[self.benchmark_type_name]
 
-        # Set door mode
+        # Set door controller mode
+        door_node_name = rospy.get_param('door_node_name')
+
+        set_door_mode = rospy.ServiceProxy('/' + door_node_name + '/set_mode', SetDoorControllerMode)
+
         door_mode_request = SetDoorControllerModeRequest()
         if self.benchmark_type.brake_enabled:
             door_mode_request.mode = SetDoorControllerModeRequest.MODE_LUT
@@ -57,7 +54,9 @@ class MadrobDoorControl:
         # Reverse order of lutCCW
         lutCCW = list(reversed(self.benchmark_type.lut))
 
-        # Set LUT
+        # Set door controller LUT
+        set_door_lut = rospy.ServiceProxy('/' + door_node_name + '/set_lut', SetDoorControllerLUT)
+
         if self.benchmark_type.brake_enabled:
             cw_door_lut_request = SetDoorControllerLUTRequest()
             cw_door_lut_request.type = SetDoorControllerLUTRequest.ANGLE_CW

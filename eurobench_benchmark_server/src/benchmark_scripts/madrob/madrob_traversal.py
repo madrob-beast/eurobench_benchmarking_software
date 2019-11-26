@@ -7,6 +7,7 @@ from madrob_door_control import MadrobDoorControl
 from base_benchmark import BaseBenchmark
 from std_msgs.msg import Bool
 from os import path
+from datetime import datetime
 
 class BenchmarkObject(BaseBenchmark):
 
@@ -55,7 +56,8 @@ class BenchmarkObject(BaseBenchmark):
 
         subject_number = self.robot_name # TODO this should be a number/id
         run_number = self.run_number
-        filename = 'subject_%s_door_%d.yaml' % (subject_number, run_number)
+        date = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = 'subject_%s_door_%d_%s.yaml' % (subject_number, run_number, date)
 
         with open(path.join(output_dir, filename), 'w') as outfile:
             yaml.dump(testbed_conf, outfile, default_flow_style=False)
