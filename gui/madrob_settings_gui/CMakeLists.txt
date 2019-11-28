@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   rqt_gui_cpp
   std_msgs
   benchmark_gui
+  madrob_srvs
 )
 
 catkin_python_setup()

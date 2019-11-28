@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>eurobench_bms_msgs_and_srvs</name>
+  <version>0.0.0</version>
+  <description>The eurobench_bms_msgs_and_srvs package</description>
+
+  <maintainer email="95joaopereira@gmail.com">João Manuel Pereira</maintainer>
+  <license>TODO</license>
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>message_generation</depend>
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_srvs</depend>
+
+  <export>
+
+  </export>
+</package>

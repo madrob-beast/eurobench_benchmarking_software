@@ -1,18 +1,14 @@
 <launch>
-  <!-- Only for testing. Rename this to madrob_dummy when we have a 'real' madrob.launch -->
   <rosparam file="$(find eurobench_benchmark_server)/config/general.yaml" command="load" subst_value="true" />
 
   <rosparam>
     door_node_name: dummy_door
     handle_node_name: dummy_handle
+    passage_node_name: dummy_passage
   </rosparam>
-
-  <node pkg="madrob" type="dummy_door.py" name="dummy_door" output="screen"/>
-  <node pkg="madrob" type="dummy_handle.py" name="dummy_handle" output="screen"/>
 
   <node name="eurobench_benchmark_server" pkg="eurobench_benchmark_server" type="benchmark_server.py" output="screen">
     <param name="benchmark_group" value="MADROB" />
   </node>
-  <include file="$(find benchmark_gui)/launch/madrob_gui.launch" />
 
 </launch>

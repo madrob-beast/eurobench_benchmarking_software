@@ -11,8 +11,8 @@ from python_qt_binding.QtWidgets import QWidget, QComboBox, QPushButton, QLabel,
 from python_qt_binding.QtCore import Qt, pyqtSignal
 from python_qt_binding.QtGui import QPalette
 
-from eurobench_benchmark_server.srv import *
-from eurobench_benchmark_server.msg import *
+from eurobench_bms_msgs_and_srvs.srv import *
+from eurobench_bms_msgs_and_srvs.msg import *
 from std_srvs.srv import Empty
 
 
@@ -37,8 +37,10 @@ class BenchmarkGui(Plugin):
         self._widget.setWindowTitle('EUROBENCH Benchmark Control')
 
         self.robot_name_label = self._widget.findChild(QLabel, 'robot_name_label')
-        self.benchmark_name_label = self._widget.findChild(QLabel, 'benchmark_name_label')
         self.benchmark_status_label = self._widget.findChild(QLabel, 'status_label')
+
+        self.benchmark_name_label = self._widget.findChild(QLabel, 'benchmark_name_label')
+        self.benchmark_name_label.setText(rospy.get_param('benchmark_group'))
 
         self.greenPalette = QPalette()
         self.greenPalette.setColor(self.benchmark_status_label.foregroundRole(), Qt.darkGreen)
@@ -67,21 +69,15 @@ class BenchmarkGui(Plugin):
         self.stop_button = self._widget.findChild(QPushButton, 'stop_button')
         self.stop_button.clicked.connect(self.on_stopbutton_click)
 
-        # Call benchmark settings service to add robot and benchmark names to the combo boxes
-        get_benchmark_server_settings = rospy.ServiceProxy('bmserver/settings', BenchmarkServerSettings)
-        settings = get_benchmark_server_settings()
-        self.benchmark_ids = settings.benchmark_ids
-        self.benchmark_timeouts = settings.benchmark_timeouts
+        # Get robot names from BMS to fill the combo box
+        get_robot_names = rospy.ServiceProxy('bmserver/robot_names', BenchmarkServerRobotNames)
+        robot_names = get_robot_names()
 
         self.robot_combo = self._widget.findChild(QComboBox, 'robot_combo')
-        self.robot_combo.addItems([''] + settings.robot_names)
-
-        self.benchmark_combo = self._widget.findChild(QComboBox, 'benchmark_combo')
-        self.benchmark_combo.addItems([''] + settings.benchmark_descriptions)
+        self.robot_combo.addItems([''] + robot_names.robot_names)
 
         # Combobox listeners
         self.robot_combo.currentTextChanged.connect(self.on_combobox_change)
-        self.benchmark_combo.currentTextChanged.connect(self.on_combobox_change)
 
         # Subscribe to benchmark state
         rospy.Subscriber('bmserver/state', BenchmarkServerState, self.state_callback)
@@ -90,12 +86,8 @@ class BenchmarkGui(Plugin):
 
     def on_combobox_change(self, value):
         self.robot_name_label.setText(self.robot_combo.currentText())
-        self.benchmark_name_label.setText(self.benchmark_combo.currentText())
 
     def on_startbutton_click(self):
-        benchmark_index = self.benchmark_combo.currentIndex() - 1
-        benchmark_code = self.benchmark_ids[benchmark_index]
-
         robot_name = self.robot_combo.currentText()
 
         run_number = self.run_spinbox.value()
@@ -103,7 +95,6 @@ class BenchmarkGui(Plugin):
         start_benchmark = rospy.ServiceProxy('bmserver/start_benchmark', StartBenchmark)
 
         start_request = StartBenchmarkRequest()
-        start_request.benchmark_code = benchmark_code
         start_request.robot_name = robot_name
         start_request.run_number = run_number
 
@@ -120,7 +111,6 @@ class BenchmarkGui(Plugin):
         startbutton_enabled = True
 
         if(self.robot_combo.currentText() == ''
-        or self.benchmark_combo.currentText() == ''
         or state.status == BenchmarkServerState.RUNNING_BENCHMARK):
             startbutton_enabled = False
 
@@ -132,19 +122,17 @@ class BenchmarkGui(Plugin):
             self.benchmark_status_label.setPalette(self.yellowPalette)
 
             self.robot_combo.setEnabled(False)
-            self.benchmark_combo.setEnabled(False)
         else:
             self.benchmark_status_label.setText('Ready')
             self.benchmark_status_label.setPalette(self.greenPalette)
 
             self.robot_combo.setEnabled(True)
-            self.benchmark_combo.setEnabled(True)
 
         # Set clock timer
-        if self.server_status == BenchmarkServerState.READY and self.benchmark_combo.currentIndex() > 0:
-            self.set_timer_signal.emit(self.benchmark_timeouts[self.benchmark_combo.currentIndex()-1])
+        if self.server_status == BenchmarkServerState.READY:
+            self.set_timer_signal.emit(0)
         else:
-            self.set_timer_signal.emit(state.current_benchmark_seconds_left)
+            self.set_timer_signal.emit(state.current_benchmark_seconds_passed)
 
         # Set results screen and detail label
         if self.server_status == BenchmarkServerState.RUNNING_BENCHMARK:
@@ -157,10 +145,10 @@ class BenchmarkGui(Plugin):
                 self.results_detail_label.setPalette(self.greenPalette)
                 self.results_detail_label.setText('(benchmark finished)')
 
-    def timer_slot(self, seconds_left):
-        minutes_left = seconds_left // 60
-        seconds_left = seconds_left % 60
-        self.clock_textedit.setText(' %02d:%02d' % (minutes_left, seconds_left))
+    def timer_slot(self, seconds_passed):
+        minutes_passed = seconds_passed // 60
+        seconds_passed = seconds_passed % 60
+        self.clock_textedit.setText(' %02d:%02d' % (minutes_passed, seconds_passed))
 
     def benchmark_info_slot(self, info):
         if info:

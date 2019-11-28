@@ -3,6 +3,6 @@ uint8 RUNNING_BENCHMARK = 1
 
 time timestamp
 uint8 status
-uint16 current_benchmark_seconds_left
+uint16 current_benchmark_seconds_passed
 string current_benchmark_info
 string last_benchmark_info

@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   std_srvs
   sensor_msgs
-  eurobench_benchmark_server
+  eurobench_bms_msgs_and_srvs
 )
 
 catkin_python_setup()

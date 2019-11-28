@@ -6,7 +6,7 @@ from python_qt_binding import loadUi
 from python_qt_binding.QtWidgets import QWidget, QLabel, QComboBox, QGroupBox, QPushButton, QPlainTextEdit
 
 from std_msgs.msg import String
-from eurobench_benchmark_server.srv import *
+from eurobench_bms_msgs_and_srvs.srv import *
 from madrob_srvs.srv import *
 
 
@@ -92,7 +92,7 @@ class madrob_settings_gui(Plugin):
         try:
             weight = int(round(float(self.loadcell_weight_textedit.toPlainText())))
         except:
-            print('Error parsing integer for "weight": no calibration done.')
+            rospy.logerr('Error parsing integer for "weight": no calibration done.')
             return
 
         calibrate_handle = rospy.ServiceProxy('/' + self.handle_node_name + '/calibrate', CalibrateHandle)
@@ -112,7 +112,7 @@ class madrob_settings_gui(Plugin):
         try:
             weight = int(round(float(self.loadcell_weight_textedit.toPlainText())))
         except:
-            print('Error parsing integer for "weight": no calibration done.')
+            rospy.logerr('Error parsing integer for "weight": no calibration done.')
             return
 
         calibrate_handle = rospy.ServiceProxy('/' + self.handle_node_name + '/calibrate', CalibrateHandle)

@@ -31,21 +31,6 @@
     </font>
    </property>
   </widget>
-  <widget class="QComboBox" name="benchmark_combo">
-   <property name="geometry">
-    <rect>
-     <x>110</x>
-     <y>55</y>
-     <width>146</width>
-     <height>26</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>12</pointsize>
-    </font>
-   </property>
-  </widget>
   <widget class="QLabel" name="robot_label">
    <property name="geometry">
     <rect>
@@ -62,24 +47,6 @@
    </property>
    <property name="text">
     <string>Robot:</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="benchmark_label">
-   <property name="geometry">
-    <rect>
-     <x>15</x>
-     <y>60</y>
-     <width>96</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>12</pointsize>
-    </font>
-   </property>
-   <property name="text">
-    <string>Benchmark:</string>
    </property>
   </widget>
   <widget class="QLabel" name="robot_name_label">
@@ -279,7 +246,7 @@
    <property name="geometry">
     <rect>
      <x>16</x>
-     <y>100</y>
+     <y>56</y>
      <width>81</width>
      <height>21</height>
     </rect>
@@ -297,7 +264,7 @@
    <property name="geometry">
     <rect>
      <x>111</x>
-     <y>98</y>
+     <y>54</y>
      <width>56</width>
      <height>27</height>
     </rect>
@@ -310,9 +277,7 @@
    </property>
   </widget>
   <zorder>robot_combo</zorder>
-  <zorder>benchmark_combo</zorder>
   <zorder>robot_label</zorder>
-  <zorder>benchmark_label</zorder>
   <zorder>benchmark_name_label</zorder>
   <zorder>start_button</zorder>
   <zorder>stop_button</zorder>
