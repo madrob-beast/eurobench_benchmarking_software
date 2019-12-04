@@ -7,6 +7,8 @@
     passage_node_name: dummy_passage
   </rosparam>
 
+  <include file="$(find eurobench_rosbag_recorder)/launch/recorder.launch" />
+
   <node name="eurobench_benchmark_server" pkg="eurobench_benchmark_server" type="benchmark_server.py" output="screen">
     <param name="benchmark_group" value="MADROB" />
   </node>

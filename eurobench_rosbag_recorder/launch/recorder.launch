@@ -1,0 +1,3 @@
+<launch>
+    <node name="eurobench_rosbag_recorder" pkg="eurobench_rosbag_recorder" type="eurobench_rosbag_recorder.py" output="screen" />
+</launch>

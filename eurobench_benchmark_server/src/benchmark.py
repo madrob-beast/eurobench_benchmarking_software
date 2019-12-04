@@ -9,6 +9,8 @@ from datetime import datetime
 from collections import OrderedDict
 from os import path, makedirs
 from exceptions import NotImplementedError
+from std_srvs.srv import Trigger
+from eurobench_bms_msgs_and_srvs.srv import StartRecording, StartRecordingRequest
 from benchmark_scripts.testbed_comm.madrob_testbed_comm import MadrobTestbedComm
 from benchmark_scripts.preprocess.madrob_preprocess import MadrobPreprocess
 
@@ -18,6 +20,15 @@ class Benchmark(object):
         self.benchmark_group = benchmark_group
         self.config = config
         self.output_dir = bms_utils.get_output_dir()
+
+        try:
+            rospy.wait_for_service('/eurobench_rosbag_recorder/start_recording', timeout=5.0)
+        except rospy.ROSException:
+            rospy.logfatal('eurobench_rosbag_recorder: start_recording service unavailable.')
+            rospy.signal_shutdown('Rosbag recorder unavailable')
+
+        self.start_recording_service = rospy.ServiceProxy('/eurobench_rosbag_recorder/start_recording', StartRecording)
+        self.stop_recording_service = rospy.ServiceProxy('/eurobench_rosbag_recorder/stop_recording', Trigger)
 
         if benchmark_group == 'MADROB':
             self.testbed_device = 'door'
@@ -66,12 +77,45 @@ class Benchmark(object):
         # Setup testbed
         self.testbed_comm.setup_testbed()
 
+
         # Save testbed config yaml file
         start_time_str = self.start_time.strftime('%Y%m%d_%H%M%S')
-        filepath = path.join(self.output_dir, 'subject_%s_%s_%03d_%s.yaml' % 
+        testbed_filepath = path.join(self.output_dir, 'subject_%s_%s_%03d_%s.yaml' % 
             (self.robot_name, self.testbed_device, self.run_number, start_time_str))
-        self.testbed_comm.write_testbed_conf_file(filepath)
+        self.testbed_comm.write_testbed_conf_file(testbed_filepath)
+
 
         # Start recording rosbag
+        rosbag_filepath = path.join(self.output_dir, 'subject_%s_%s_%03d_%s.bag' % 
+            (self.robot_name, self.benchmark_group, self.run_number, start_time_str))
+        
+        request = StartRecordingRequest()
+        request.rosbag_filepath = rosbag_filepath
+        if 'excluded_topics' in self.config:
+            request.excluded_topics = self.config['excluded_topics']
+        
+        response = self.start_recording_service(request)
+        if not response.success:
+            rospy.logerr('Could not start recording rosbag')
+            return
+
 
         # Start preprocessing script
+        self.preprocess.start()
+
+
+        # Loop while benchmark is running
+        while not self.terminated:
+            rospy.sleep(0.1)
+
+
+        # Stop preprocessing
+        self.preprocess.finish()
+
+
+        # Stop recording
+        response = self.stop_recording_service()
+        if not response.success:
+            rospy.logerr('Could not stop recording rosbag')
+
+        # Calculate PIs

@@ -1,0 +1,4 @@
+string rosbag_filepath
+string[] excluded_topics
+---
+bool success

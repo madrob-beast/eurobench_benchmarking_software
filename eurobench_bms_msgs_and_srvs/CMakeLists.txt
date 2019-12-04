@@ -17,6 +17,7 @@ add_message_files(
 
 add_service_files(
   FILES
+  StartRecording.srv
   StartBenchmark.srv
   StopBenchmark.srv
   BenchmarkServerRobotNames.srv
