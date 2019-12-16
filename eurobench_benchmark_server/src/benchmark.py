@@ -33,7 +33,7 @@ class Benchmark(object):
         if benchmark_group == 'MADROB':
             self.testbed_device = 'door'
             self.testbed_comm = MadrobTestbedComm(self.config['benchmarks'])
-            self.preprocess = MadrobPreprocess()
+            self.preprocess = MadrobPreprocess(self.output_dir)
 
 
         if benchmark_group == 'BEAST':
@@ -91,8 +91,12 @@ class Benchmark(object):
         
         request = StartRecordingRequest()
         request.rosbag_filepath = rosbag_filepath
+
+        if rospy.has_param('excluded_topics'):
+            request.excluded_topics += rospy.get_param('excluded_topics')
+
         if 'excluded_topics' in self.config:
-            request.excluded_topics = self.config['excluded_topics']
+            request.excluded_topics += self.config['excluded_topics']
         
         response = self.start_recording_service(request)
         if not response.success:
@@ -101,13 +105,11 @@ class Benchmark(object):
 
 
         # Start preprocessing script
-        self.preprocess.start()
-
+        self.preprocess.start(self.robot_name, self.run_number, self.start_time)
 
         # Loop while benchmark is running
         while not self.terminated:
             rospy.sleep(0.1)
-
 
         # Stop preprocessing
         self.preprocess.finish()

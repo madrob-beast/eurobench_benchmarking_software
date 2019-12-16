@@ -4,3 +4,6 @@ benchmark_output_directory: "~/eurobench_output"
 robot_names:
   - TestingBot
   - TestRobot2
+
+excluded_topics:
+  - /bmserver/state
