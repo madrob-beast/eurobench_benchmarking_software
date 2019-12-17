@@ -13,6 +13,10 @@ from std_srvs.srv import Trigger
 from eurobench_bms_msgs_and_srvs.srv import StartRecording, StartRecordingRequest
 from benchmark_scripts.testbed_comm.madrob_testbed_comm import MadrobTestbedComm
 from benchmark_scripts.preprocess.madrob_preprocess import MadrobPreprocess
+import benchmark_scripts.performance.madrob
+from benchmark_scripts.performance.madrob import *
+import benchmark_scripts.performance.beast
+from benchmark_scripts.performance.beast import *
 
 
 class Benchmark(object):
@@ -35,6 +39,7 @@ class Benchmark(object):
             self.testbed_comm = MadrobTestbedComm(self.config['benchmarks'])
             self.preprocess = MadrobPreprocess(self.output_dir)
 
+            self.performance_indicators = benchmark_scripts.performance.madrob.__all__
 
         if benchmark_group == 'BEAST':
             self.testbed_device = 'trolley'
@@ -112,7 +117,7 @@ class Benchmark(object):
             rospy.sleep(0.1)
 
         # Stop preprocessing
-        self.preprocess.finish()
+        preprocessed_filenames_dict = self.preprocess.finish()
 
 
         # Stop recording
@@ -120,4 +125,7 @@ class Benchmark(object):
         if not response.success:
             rospy.logerr('Could not stop recording rosbag')
 
-        # Calculate PIs
+        # Calculate PIs - Run all pre-processing scripts
+        for performance_indicator_module in self.performance_indicators:
+            performance_indicator = globals()[performance_indicator_module].PerformanceIndicator(self.output_dir)
+            performance_indicator.run(preprocessed_filenames_dict, self.start_time)
