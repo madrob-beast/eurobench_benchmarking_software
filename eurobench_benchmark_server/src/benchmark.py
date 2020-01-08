@@ -5,7 +5,7 @@ import yaml
 import json
 import time
 import bms_utils
-from datetime import datetime
+from datetime import datetime, timedelta
 from collections import OrderedDict
 from os import path, makedirs
 from exceptions import NotImplementedError
@@ -26,13 +26,13 @@ class Benchmark(object):
         self.output_dir = bms_utils.get_output_dir()
 
         try:
-            rospy.wait_for_service('/eurobench_rosbag_recorder/start_recording', timeout=5.0)
+            rospy.wait_for_service('/eurobench_rosbag_controller/start_recording', timeout=5.0)
         except rospy.ROSException:
-            rospy.logfatal('eurobench_rosbag_recorder: start_recording service unavailable.')
-            rospy.signal_shutdown('Rosbag recorder unavailable')
+            rospy.logfatal('eurobench_rosbag_controller: start_recording service unavailable.')
+            rospy.signal_shutdown('Rosbag controller unavailable')
 
-        self.start_recording_service = rospy.ServiceProxy('/eurobench_rosbag_recorder/start_recording', StartRecording)
-        self.stop_recording_service = rospy.ServiceProxy('/eurobench_rosbag_recorder/stop_recording', Trigger)
+        self.start_recording_service = rospy.ServiceProxy('/eurobench_rosbag_controller/start_recording', StartRecording)
+        self.stop_recording_service = rospy.ServiceProxy('/eurobench_rosbag_controller/stop_recording', Trigger)
 
         if benchmark_group == 'MADROB':
             self.testbed_device = 'door'
@@ -45,11 +45,15 @@ class Benchmark(object):
             self.testbed_device = 'trolley'
     
 
-    def setup(self, robot_name, run_number):
+    def setup(self, robot_name, run_number, rosbag_path, testbed_conf_path):
         self.terminated = False
         self.robot_name = robot_name
         self.run_number = run_number
-        self.start_time = datetime.now()
+        self.rosbag_path = rosbag_path
+        self.testbed_conf_path = testbed_conf_path
+        self.start_time = datetime.now() + timedelta(seconds=rospy.get_param('benchmark_countdown'))
+        self.start_time_ros = rospy.Time.now() + rospy.Duration(rospy.get_param('benchmark_countdown'))
+
         self.result = {}
 
     def get_benchmark_info(self):
@@ -79,38 +83,39 @@ class Benchmark(object):
         rospy.loginfo(self.get_benchmark_info() + '\n')
 
     def execute(self):
-        # Setup testbed
-        self.testbed_comm.setup_testbed()
+        if not self.rosbag_path:
+            # Setup testbed
+            self.testbed_comm.setup_testbed()
 
 
-        # Save testbed config yaml file
-        start_time_str = self.start_time.strftime('%Y%m%d_%H%M%S')
-        testbed_filepath = path.join(self.output_dir, 'subject_%s_%s_%03d_%s.yaml' % 
-            (self.robot_name, self.testbed_device, self.run_number, start_time_str))
-        self.testbed_comm.write_testbed_conf_file(testbed_filepath)
+            # Save testbed config yaml file
+            start_time_str = self.start_time.strftime('%Y%m%d_%H%M%S')
+            self.testbed_conf_path = path.join(self.output_dir, 'subject_%s_%s_%03d_%s.yaml' % 
+                (self.robot_name, self.testbed_device, self.run_number, start_time_str))
+            self.testbed_comm.write_testbed_conf_file(self.testbed_conf_path, self.start_time_ros)
 
 
-        # Start recording rosbag
-        rosbag_filepath = path.join(self.output_dir, 'subject_%s_%s_%03d_%s.bag' % 
-            (self.robot_name, self.benchmark_group, self.run_number, start_time_str))
-        
-        request = StartRecordingRequest()
-        request.rosbag_filepath = rosbag_filepath
+            # Start recording rosbag
+            rosbag_filepath = path.join(self.output_dir, 'subject_%s_%s_%03d_%s.bag' % 
+                (self.robot_name, self.benchmark_group, self.run_number, start_time_str))
+            
+            request = StartRecordingRequest()
+            request.rosbag_filepath = rosbag_filepath
 
-        if rospy.has_param('excluded_topics'):
-            request.excluded_topics += rospy.get_param('excluded_topics')
+            if rospy.has_param('excluded_topics'):
+                request.excluded_topics += rospy.get_param('excluded_topics')
 
-        if 'excluded_topics' in self.config:
-            request.excluded_topics += self.config['excluded_topics']
-        
-        response = self.start_recording_service(request)
-        if not response.success:
-            rospy.logerr('Could not start recording rosbag')
-            return
+            if 'excluded_topics' in self.config:
+                request.excluded_topics += self.config['excluded_topics']
+            
+            response = self.start_recording_service(request)
+            if not response.success:
+                rospy.logerr('Could not start recording rosbag')
+                return
 
 
         # Start preprocessing script
-        self.preprocess.start(self.robot_name, self.run_number, self.start_time)
+        self.preprocess.start(self.robot_name, self.run_number, self.start_time, rosbag_path=self.rosbag_path)
 
         # Loop while benchmark is running
         while not self.terminated:
@@ -120,12 +125,13 @@ class Benchmark(object):
         preprocessed_filenames_dict = self.preprocess.finish()
 
 
-        # Stop recording
-        response = self.stop_recording_service()
-        if not response.success:
-            rospy.logerr('Could not stop recording rosbag')
+        if not self.rosbag_path:
+            # Stop recording
+            response = self.stop_recording_service()
+            if not response.success:
+                rospy.logerr('Could not stop recording rosbag')
 
         # Calculate PIs - Run all pre-processing scripts
         for performance_indicator_module in self.performance_indicators:
             performance_indicator = globals()[performance_indicator_module].PerformanceIndicator(self.output_dir)
-            performance_indicator.run(preprocessed_filenames_dict, self.start_time)
+            performance_indicator.run(preprocessed_filenames_dict, self.testbed_conf_path, self.start_time)

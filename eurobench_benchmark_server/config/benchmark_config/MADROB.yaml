@@ -1,3 +1,11 @@
+door_node_name: dummy_door
+handle_node_name: dummy_handle
+passage_node_name: dummy_passage
+
+#door_node_name: madrob/door
+#handle_node_name: madrob/handle
+#passage_node_name: madrob/passage
+
 benchmarks:
   No Force:
     id: 1

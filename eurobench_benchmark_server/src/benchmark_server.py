@@ -22,6 +22,8 @@ class BenchmarkServer(object):
 
         self.benchmark_group = rospy.get_param('~benchmark_group')
 
+        self.benchmark_countdown = int(rospy.get_param('benchmark_countdown'))
+
         # Load config from yaml file
         config_dir = rospy.get_param('benchmark_config_directory')
         config_filepath = path.join(config_dir, '%s.yaml' % (self.benchmark_group))
@@ -41,7 +43,14 @@ class BenchmarkServer(object):
                       (self.benchmark_group, request.robot_name, request.run_number))
 
         self.current_benchmark = Benchmark(self.benchmark_group, self.config)
-        self.current_benchmark.setup(request.robot_name, request.run_number)
+
+        rosbag_path = None
+        testbed_conf_path = None
+        if request.use_rosbag:
+            rosbag_path = request.rosbag_path
+            testbed_conf_path = request.testbed_conf_path
+
+        self.current_benchmark.setup(request.robot_name, request.run_number, rosbag_path, testbed_conf_path)
 
         # Execute benchmark in a new thread
         threading.Thread(target=self.execute_benchmark).start()
@@ -102,13 +111,13 @@ class BenchmarkServer(object):
 
         if self.current_benchmark:
             server_state.status = server_state.RUNNING_BENCHMARK
-            server_state.current_benchmark_seconds_passed = (datetime.now() - self.current_benchmark.start_time).seconds
+            server_state.current_benchmark_seconds_passed = (datetime.now() - self.current_benchmark.start_time).total_seconds()
             server_state.current_benchmark_info = self.current_benchmark.get_benchmark_info()
 
         else:
             server_state.status = server_state.READY
             if self.last_benchmark_info:
-                server_state.current_benchmark_seconds_passed = 0
+                server_state.current_benchmark_seconds_passed = -self.benchmark_countdown
                 server_state.last_benchmark_info = self.last_benchmark_info
 
         self.benchmark_server_state_publisher.publish(server_state)

@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-import os
+from os import path, makedirs
 import sys
 import signal
 import rospy
 
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
-from python_qt_binding.QtWidgets import QWidget, QComboBox, QPushButton, QLabel, QTextEdit, QSpinBox
+from python_qt_binding.QtWidgets import QWidget, QComboBox, QPushButton, QLabel, QTextEdit, QSpinBox, QFileDialog, QLineEdit
 from python_qt_binding.QtCore import Qt, pyqtSignal
 from python_qt_binding.QtGui import QPalette
 
@@ -18,7 +18,7 @@ from std_srvs.srv import Empty
 
 class BenchmarkGui(Plugin):
 
-    set_timer_signal = pyqtSignal(int)
+    set_timer_signal = pyqtSignal(int, bool)
     set_benchmark_info_signal = pyqtSignal(str)
 
     def __init__(self, context):
@@ -28,7 +28,7 @@ class BenchmarkGui(Plugin):
 
         self._widget = QWidget()
 
-        ui_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+        ui_file = path.join(path.dirname(path.realpath(__file__)),
                                'benchmark_gui.ui')
 
         loadUi(ui_file, self._widget)
@@ -41,6 +41,8 @@ class BenchmarkGui(Plugin):
 
         self.benchmark_name_label = self._widget.findChild(QLabel, 'benchmark_name_label')
         self.benchmark_name_label.setText(rospy.get_param('benchmark_group'))
+
+        self.clock_label = self._widget.findChild(QLabel, 'clock_label')
 
         self.greenPalette = QPalette()
         self.greenPalette.setColor(self.benchmark_status_label.foregroundRole(), Qt.darkGreen)
@@ -61,10 +63,22 @@ class BenchmarkGui(Plugin):
 
         self.run_spinbox = self._widget.findChild(QSpinBox, 'run_spinbox')
 
-        # Disable start button, set its listener
+        self.rosbag_path_edit = self._widget.findChild(QLineEdit, 'rosbag_path_edit')
+        self.rosbag_path_browse = self._widget.findChild(QPushButton, 'rosbag_path_browse')
+        self.rosbag_path_browse.clicked.connect(self.on_rosbag_path_browse_click)
+
+        self.testbed_yaml_edit = self._widget.findChild(QLineEdit, 'testbed_yaml_edit')
+        self.testbed_yaml_browse = self._widget.findChild(QPushButton, 'testbed_yaml_browse')
+        self.testbed_yaml_browse.clicked.connect(self.on_testbed_yaml_browse_click)
+
+        # Disable start buttons, set their listeners
         self.start_button = self._widget.findChild(QPushButton, 'start_button')
         self.start_button.setEnabled(False)
         self.start_button.clicked.connect(self.on_startbutton_click)
+
+        self.start_rosbag_button = self._widget.findChild(QPushButton, 'start_from_bag_button')
+        self.start_rosbag_button.setEnabled(False)
+        self.start_rosbag_button.clicked.connect(self.on_rosbagbutton_click)
 
         self.stop_button = self._widget.findChild(QPushButton, 'stop_button')
         self.stop_button.clicked.connect(self.on_stopbutton_click)
@@ -97,8 +111,47 @@ class BenchmarkGui(Plugin):
         start_request = StartBenchmarkRequest()
         start_request.robot_name = robot_name
         start_request.run_number = run_number
+        start_request.use_rosbag = False
 
         start_benchmark(start_request)
+
+    def on_rosbagbutton_click(self):
+        robot_name = self.robot_combo.currentText()
+
+        run_number = self.run_spinbox.value()
+
+        start_benchmark = rospy.ServiceProxy('bmserver/start_benchmark', StartBenchmark)
+
+        start_request = StartBenchmarkRequest()
+        start_request.robot_name = robot_name
+        start_request.run_number = run_number
+        start_request.use_rosbag = True
+        start_request.rosbag_path = self.rosbag_path_edit.text()
+        start_request.testbed_conf_path = self.testbed_yaml_edit.text()
+
+        start_benchmark(start_request)
+
+    def on_rosbag_path_browse_click(self):
+         # Show file dialog to choose rosbag
+        rosbag_dir = self.get_cached_dir('rosbag_dir') # Read cached rosbag directory
+        rosbag_filepath, _ = QFileDialog.getOpenFileName(self._widget, 'Open rosbag file', rosbag_dir, 'Rosbag Files (*.bag)')
+        if not rosbag_filepath:
+            return
+
+        self.set_cached_dir('rosbag_dir', path.dirname(rosbag_filepath)) # Cache rosbag directory for next time
+
+        self.rosbag_path_edit.setText(rosbag_filepath)
+
+    def on_testbed_yaml_browse_click(self):
+        # Show file dialog to choose testbed configuration yaml
+        yaml_dir = self.get_cached_dir('yaml_dir') # Read cached rosbag directory
+        yaml_filepath, _ = QFileDialog.getOpenFileName(self._widget, 'Open yaml file', yaml_dir, 'YAML Files (*.yaml)')
+        if not yaml_filepath:
+            return
+
+        self.set_cached_dir('yaml_dir', path.dirname(yaml_filepath)) # Cache rosbag directory for next time
+
+        self.testbed_yaml_edit.setText(yaml_filepath)
 
     def on_stopbutton_click(self):
         stop_benchmark = rospy.ServiceProxy('bmserver/stop_benchmark', StopBenchmark)
@@ -115,6 +168,7 @@ class BenchmarkGui(Plugin):
             startbutton_enabled = False
 
         self.start_button.setEnabled(startbutton_enabled)
+        self.start_rosbag_button.setEnabled(startbutton_enabled)
 
         # If benchmark is running: set label, disable comboboxes
         if(state.status == BenchmarkServerState.RUNNING_BENCHMARK):
@@ -129,10 +183,7 @@ class BenchmarkGui(Plugin):
             self.robot_combo.setEnabled(True)
 
         # Set clock timer
-        if self.server_status == BenchmarkServerState.READY:
-            self.set_timer_signal.emit(0)
-        else:
-            self.set_timer_signal.emit(state.current_benchmark_seconds_passed)
+        self.set_timer_signal.emit(state.current_benchmark_seconds_passed, self.server_status == BenchmarkServerState.RUNNING_BENCHMARK)
 
         # Set results screen and detail label
         if self.server_status == BenchmarkServerState.RUNNING_BENCHMARK:
@@ -145,7 +196,23 @@ class BenchmarkGui(Plugin):
                 self.results_detail_label.setPalette(self.greenPalette)
                 self.results_detail_label.setText('(benchmark finished)')
 
-    def timer_slot(self, seconds_passed):
+    def timer_slot(self, seconds_passed, benchmark_running):
+        if not benchmark_running:
+            self.clock_label.setPalette(self.blackPalette)
+            self.clock_label.setText('Benchmark Time')
+            self.clock_textedit.setTextColor(Qt.gray)
+            seconds_passed = abs(seconds_passed)
+        else:
+            if seconds_passed < 0:
+                self.clock_label.setPalette(self.yellowPalette)
+                self.clock_label.setText('Benchmark starting')
+                self.clock_textedit.setTextColor(Qt.darkYellow)
+                seconds_passed = -seconds_passed
+            else:
+                self.clock_label.setPalette(self.blackPalette)
+                self.clock_label.setText('Benchmark running')
+                self.clock_textedit.setTextColor(Qt.black)
+        
         minutes_passed = seconds_passed // 60
         seconds_passed = seconds_passed % 60
         self.clock_textedit.setText(' %02d:%02d' % (minutes_passed, seconds_passed))
@@ -167,3 +234,20 @@ class BenchmarkGui(Plugin):
     def restore_settings(self, plugin_settings, instance_settings):
         # Restore intrinsic configuration
         pass
+
+    def get_cached_dir(self, dir_type):
+        output_dir = path.expanduser(rospy.get_param('benchmark_output_directory'))
+        if path.exists(path.join(output_dir, 'app_config', dir_type)):
+            with open(path.join(output_dir, 'app_config', dir_type)) as file:
+                return path.expanduser(file.read().strip())
+        else:
+            return '/home/'
+
+    def set_cached_dir(self, dir_type, dir_path):
+        output_dir = path.expanduser(rospy.get_param('benchmark_output_directory'))
+        app_config = path.join(output_dir, 'app_config')
+        if not path.exists(app_config):
+            makedirs(app_config)
+
+        with open(path.join(app_config, dir_type), 'w+') as file:
+            file.write(dir_path)

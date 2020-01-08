@@ -1,13 +1,9 @@
 <launch>
   <rosparam file="$(find eurobench_benchmark_server)/config/general.yaml" command="load" subst_value="true" />
 
-  <rosparam>
-    door_node_name: dummy_door
-    handle_node_name: dummy_handle
-    passage_node_name: dummy_passage
-  </rosparam>
+  <rosparam file="$(find eurobench_benchmark_server)/config/benchmark_config/MADROB.yaml" command="load" subst_value="true" />
 
-  <include file="$(find eurobench_rosbag_recorder)/launch/recorder.launch" />
+  <include file="$(find eurobench_rosbag_controller)/launch/controller.launch" />
 
   <node name="eurobench_benchmark_server" pkg="eurobench_benchmark_server" type="benchmark_server.py" output="screen">
     <param name="benchmark_group" value="MADROB" />

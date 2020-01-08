@@ -1,26 +1,19 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>eurobench_rosbag_recorder</name>
+  <name>eurobench_rosbag_controller</name>
   <version>0.1.0</version>
-  <description>ROS package to allow starting and stopping of rosbag recordings via service calls.</description>
+  <description>ROS package to allow playing and recording rosbags via service calls.</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
   <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
-  <maintainer email="doug.morrison91@gmail.com">dougsm</maintainer>
+  <maintainer email="95joaopereira@gmail.com">Joao Pereira</maintainer>
 
 
   <!-- One license tag required, multiple allowed, one license per tag -->
   <!-- Commonly used license strings: -->
   <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
   <license>None</license>
-
-
-  <!-- Url tags are optional, but multiple are allowed, one per tag -->
-  <!-- Optional attribute type can be: website, bugtracker, or repository -->
-  <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/eurobench_rosbag_recorder</url> -->
-
 
   <!-- Author tags are optional, multiple are allowed, one per tag -->
   <!-- Authors do not have to be maintainers, but could be -->

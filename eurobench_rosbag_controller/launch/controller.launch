@@ -1,0 +1,3 @@
+<launch>
+    <node name="eurobench_rosbag_controller" pkg="eurobench_rosbag_controller" type="eurobench_rosbag_controller.py" output="screen" />
+</launch>

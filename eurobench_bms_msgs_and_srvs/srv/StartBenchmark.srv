@@ -1,4 +1,7 @@
 string robot_name
 uint16 run_number
+bool use_rosbag
+string rosbag_path
+string testbed_conf_path
 ---
 bool success

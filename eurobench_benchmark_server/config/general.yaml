@@ -1,4 +1,4 @@
-benchmark_config_directory: $(find eurobench_benchmark_server)/src/benchmark_config
+benchmark_config_directory: $(find eurobench_benchmark_server)/config/benchmark_config
 benchmark_output_directory: "~/eurobench_output"
 
 robot_names:
@@ -7,3 +7,6 @@ robot_names:
 
 excluded_topics:
   - /bmserver/state
+
+# Seconds until benchmark start time
+benchmark_countdown: 5

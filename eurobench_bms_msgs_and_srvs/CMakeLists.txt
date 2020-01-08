@@ -23,6 +23,7 @@ add_service_files(
   BenchmarkServerRobotNames.srv
   MadrobSettings.srv
   MadrobBenchmarkType.srv
+  PlayRosbag.srv
 )
 
 generate_messages(

@@ -24,7 +24,14 @@ class MadrobTestbedComm(BaseTestbedComm):
         # Set door controller mode
         door_node_name = rospy.get_param('door_node_name')
 
-        set_door_mode = rospy.ServiceProxy('/' + door_node_name + '/set_mode', SetDoorControllerMode)
+        set_mode_service_name = '/' + door_node_name + '/set_mode'
+        try:
+            rospy.wait_for_service(set_mode_service_name, timeout=5.0)
+        except rospy.ROSException:
+            rospy.logfatal(set_mode_service_name + ' service unavailable.')
+            rospy.signal_shutdown('MADROB door node unavailable')
+
+        set_door_mode = rospy.ServiceProxy(set_mode_service_name, SetDoorControllerMode)
 
         door_mode_request = SetDoorControllerModeRequest()
         if self.current_benchmark_type['brake_enabled']:
@@ -64,13 +71,14 @@ class MadrobTestbedComm(BaseTestbedComm):
             else:
                 rospy.logerr('Error setting CCW door LUT: %s' % (ccw_door_lut_response.message))
 
-    def write_testbed_conf_file(self, filepath):
-        door_params = {}
+    def write_testbed_conf_file(self, filepath, start_time_ros):
+        testbed_params = {}
 
-        door_params['Benchmark type'] = self.current_benchmark_name
-        door_params['Door controller mode'] = SetDoorControllerModeRequest.MODE_LUT if self.current_benchmark_type['brake_enabled'] else SetDoorControllerModeRequest.MODE_DISABLED
-        door_params['LUTcw'] = self.current_benchmark_type['lut']
-        door_params['LUTccw'] = list(reversed(self.current_benchmark_type['lut']))
+        testbed_params['Start time'] = '%d.%d' % (start_time_ros.secs, start_time_ros.nsecs)
+        testbed_params['Benchmark type'] = self.current_benchmark_name
+        testbed_params['Door controller mode'] = SetDoorControllerModeRequest.MODE_LUT if self.current_benchmark_type['brake_enabled'] else SetDoorControllerModeRequest.MODE_DISABLED
+        testbed_params['LUTcw'] = self.current_benchmark_type['lut']
+        testbed_params['LUTccw'] = list(reversed(self.current_benchmark_type['lut']))
 
         with open(filepath, 'w') as file:
-            yaml.dump(door_params, file, default_flow_style=False)
+            yaml.dump(testbed_params, file, default_flow_style=False)

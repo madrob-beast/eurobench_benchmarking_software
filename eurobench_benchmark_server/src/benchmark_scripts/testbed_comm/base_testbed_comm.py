@@ -13,5 +13,5 @@ class BaseTestbedComm(object):
         raise NotImplementedError()
 
     # Writes the testbed parameters to the filepath
-    def write_testbed_conf_file(self, filepath):
+    def write_testbed_conf_file(self, filepath, start_time_ros):
         raise NotImplementedError()
