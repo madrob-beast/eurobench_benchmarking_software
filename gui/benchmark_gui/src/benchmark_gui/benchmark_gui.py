@@ -116,6 +116,13 @@ class BenchmarkGui(Plugin):
         start_benchmark(start_request)
 
     def on_rosbagbutton_click(self):
+        rosbag_path = self.rosbag_path_edit.text()
+        testbed_conf_path = self.testbed_yaml_edit.text()
+
+        if (not rosbag_path) or (not testbed_conf_path):
+            rospy.logerr('Error: Missing rosbag or yaml path.')
+            return
+
         robot_name = self.robot_combo.currentText()
 
         run_number = self.run_spinbox.value()
@@ -126,8 +133,8 @@ class BenchmarkGui(Plugin):
         start_request.robot_name = robot_name
         start_request.run_number = run_number
         start_request.use_rosbag = True
-        start_request.rosbag_path = self.rosbag_path_edit.text()
-        start_request.testbed_conf_path = self.testbed_yaml_edit.text()
+        start_request.rosbag_path = rosbag_path
+        start_request.testbed_conf_path = testbed_conf_path
 
         start_benchmark(start_request)
 
