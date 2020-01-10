@@ -5,7 +5,7 @@ from catkin_pkg.python_setup import generate_distutils_setup
 
 # fetch values from package.xml
 setup_args = generate_distutils_setup(
-    packages=['eurobench_benchmark_server'],
+    packages=['eurobench_benchmark_core'],
     package_dir={'': 'src'})
 
 setup(**setup_args)

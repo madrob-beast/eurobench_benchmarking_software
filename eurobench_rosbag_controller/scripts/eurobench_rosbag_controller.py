@@ -22,12 +22,12 @@ class RosbagController():
         self.playing = False
 
         try:
-            rospy.wait_for_service('bmserver/stop_benchmark', timeout=5.0)
+            rospy.wait_for_service('bmcore/stop_benchmark', timeout=5.0)
         except rospy.ROSException:
-            rospy.logfatal('bmserver: stop_benchmark service unavailable.')
-            rospy.signal_shutdown('Benchmark server unavailable')
+            rospy.logfatal('bmcore: stop_benchmark service unavailable.')
+            rospy.signal_shutdown('Benchmark core unavailable')
 
-        self.stop_benchmark = rospy.ServiceProxy('bmserver/stop_benchmark', StopBenchmark)
+        self.stop_benchmark = rospy.ServiceProxy('bmcore/stop_benchmark', StopBenchmark)
 
         rospy.loginfo('Rosbag Controller Started')
 

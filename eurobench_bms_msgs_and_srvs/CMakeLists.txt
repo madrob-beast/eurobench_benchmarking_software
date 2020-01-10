@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 add_message_files(
   FILES
-  BenchmarkServerState.msg
+  BenchmarkCoreState.msg
 )
 
 add_service_files(
@@ -20,7 +20,7 @@ add_service_files(
   StartRecording.srv
   StartBenchmark.srv
   StopBenchmark.srv
-  BenchmarkServerRobotNames.srv
+  BenchmarkCoreRobotNames.srv
   MadrobSettings.srv
   MadrobBenchmarkType.srv
   PlayRosbag.srv

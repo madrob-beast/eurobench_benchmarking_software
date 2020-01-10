@@ -12,10 +12,10 @@ from eurobench_bms_msgs_and_srvs.msg import *
 from benchmark import Benchmark
 
 
-class BenchmarkServer(object):
+class BenchmarkCore(object):
 
     def __init__(self):
-        rospy.init_node('eurobench_benchmark_server')
+        rospy.init_node('eurobench_benchmark_core')
 
         self.current_benchmark = None
         self.last_benchmark_info = ''
@@ -31,7 +31,7 @@ class BenchmarkServer(object):
         with open(config_filepath) as config_file:
             self.config = yaml.load(config_file)
 
-        rospy.loginfo('EUROBENCH benchmark server started.')
+        rospy.loginfo('EUROBENCH benchmark core started.')
 
     def start_benchmark_callback(self, request):
         if self.current_benchmark:
@@ -66,8 +66,8 @@ class BenchmarkServer(object):
 
         return StopBenchmarkResponse(True)
 
-    def bmserver_robot_names_callback(self, request):
-        settings_response = BenchmarkServerRobotNamesResponse()
+    def bmcore_robot_names_callback(self, request):
+        settings_response = BenchmarkCoreRobotNamesResponse()
 
         # Get robot names from params
         robot_names = rospy.get_param('robot_names')
@@ -105,46 +105,46 @@ class BenchmarkServer(object):
 
         self.current_benchmark = None
 
-    def publish_server_state(self):
-        server_state = BenchmarkServerState()
-        server_state.timestamp = rospy.Time.now()
+    def publish_core_state(self):
+        core_state = BenchmarkCoreState()
+        core_state.timestamp = rospy.Time.now()
 
         if self.current_benchmark:
-            server_state.status = server_state.RUNNING_BENCHMARK
-            server_state.current_benchmark_seconds_passed = (datetime.now() - self.current_benchmark.start_time).total_seconds()
-            server_state.current_benchmark_info = self.current_benchmark.get_benchmark_info()
+            core_state.status = core_state.RUNNING_BENCHMARK
+            core_state.current_benchmark_seconds_passed = (datetime.now() - self.current_benchmark.start_time).total_seconds()
+            core_state.current_benchmark_info = self.current_benchmark.get_benchmark_info()
 
         else:
-            server_state.status = server_state.READY
+            core_state.status = core_state.READY
             if self.last_benchmark_info:
-                server_state.current_benchmark_seconds_passed = -self.benchmark_countdown
-                server_state.last_benchmark_info = self.last_benchmark_info
+                core_state.current_benchmark_seconds_passed = -self.benchmark_countdown
+                core_state.last_benchmark_info = self.last_benchmark_info
 
-        self.benchmark_server_state_publisher.publish(server_state)
+        self.benchmark_core_state_publisher.publish(core_state)
 
     def run(self):
         self.start_benchmark_service = rospy.Service(
-            'bmserver/start_benchmark', StartBenchmark, self.start_benchmark_callback)
+            'bmcore/start_benchmark', StartBenchmark, self.start_benchmark_callback)
 
         self.stop_benchmark_service = rospy.Service(
-            'bmserver/stop_benchmark', StopBenchmark, self.stop_benchmark_callback)
+            'bmcore/stop_benchmark', StopBenchmark, self.stop_benchmark_callback)
 
         self.benchmark_settings_service = rospy.Service(
-            'bmserver/robot_names', BenchmarkServerRobotNames, self.bmserver_robot_names_callback)
+            'bmcore/robot_names', BenchmarkCoreRobotNames, self.bmcore_robot_names_callback)
 
         self.shutdown_service = rospy.Service(
-            'bmserver/shutdown', Empty, self.shutdown_callback)
+            'bmcore/shutdown', Empty, self.shutdown_callback)
 
         if self.benchmark_group == 'MADROB':
             self.madrob_settings_service = rospy.Service(
                 'madrob/settings', MadrobSettings, self.madrob_settings_callback)
 
-        self.benchmark_server_state_publisher = rospy.Publisher(
-            'bmserver/state', BenchmarkServerState, queue_size=1)
+        self.benchmark_core_state_publisher = rospy.Publisher(
+            'bmcore/state', BenchmarkCoreState, queue_size=1)
 
         rate = rospy.Rate(10)  # 10Hz
         while not rospy.is_shutdown():
-            self.publish_server_state()
+            self.publish_core_state()
 
             rate.sleep()
 
@@ -155,7 +155,7 @@ class BenchmarkServer(object):
 
 if __name__ == '__main__':
     try:
-        server = BenchmarkServer()
-        server.run()
+        core = BenchmarkCore()
+        core.run()
     except rospy.ROSInterruptException:
         pass

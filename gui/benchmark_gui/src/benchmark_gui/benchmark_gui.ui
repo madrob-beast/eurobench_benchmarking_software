@@ -14,7 +14,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>EUROBENCH benchmark server</string>
+   <string>EUROBENCH benchmark core</string>
   </property>
   <widget class="QComboBox" name="robot_combo">
    <property name="geometry">
@@ -109,7 +109,7 @@
     <string>Stop</string>
    </property>
   </widget>
-  <widget class="QLabel" name="server_label">
+  <widget class="QLabel" name="core_label">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -119,7 +119,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Server:</string>
+    <string>Core:</string>
    </property>
   </widget>
   <widget class="QLabel" name="status_label">
@@ -428,7 +428,7 @@
   <zorder>robot_label</zorder>
   <zorder>benchmark_name_label</zorder>
   <zorder>stop_button</zorder>
-  <zorder>server_label</zorder>
+  <zorder>core_label</zorder>
   <zorder>status_label</zorder>
   <zorder>clock_label</zorder>
   <zorder>results_label</zorder>

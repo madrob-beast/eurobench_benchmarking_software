@@ -1,0 +1,12 @@
+<launch>
+  <rosparam file="$(find eurobench_benchmark_core)/config/general.yaml" command="load" subst_value="true" />
+
+  <rosparam file="$(find eurobench_benchmark_core)/config/benchmark_config/MADROB.yaml" command="load" subst_value="true" />
+
+  <include file="$(find eurobench_rosbag_controller)/launch/controller.launch" />
+
+  <node name="eurobench_benchmark_core" pkg="eurobench_benchmark_core" type="benchmark_core.py" output="screen">
+    <param name="benchmark_group" value="MADROB" />
+  </node>
+
+</launch>

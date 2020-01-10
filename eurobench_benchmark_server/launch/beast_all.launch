@@ -1,9 +1,0 @@
-<launch>
-  <rosparam file="$(find eurobench_benchmark_server)/config/general.yaml" command="load" subst_value="true" />
-
-  <node name="eurobench_benchmark_server" pkg="eurobench_benchmark_server" type="benchmark_server.py" output="screen">
-    <param name="benchmark_group" value="BEAST" />
-  </node>
-  <include file="$(find benchmark_gui)/launch/beast_gui.launch" />
-
-</launch>

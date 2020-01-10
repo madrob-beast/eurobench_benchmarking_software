@@ -1,7 +1,7 @@
 EUROBENCH Benchmark Software
 =================================================
 
-Benchmark server, benchmark scripts and graphical interface for the MADROB and BEAST benchmarks.
+Benchmark core, benchmark scripts and graphical interface for the MADROB and BEAST benchmarks.
 
 ## Installation
 
@@ -17,11 +17,11 @@ You should create an output directory to store benchmark results. The default lo
 
 ## Running benchmarks
 
-Start the benchmark server in either MADROB or BEAST mode:
+Start the benchmark core in either MADROB or BEAST mode:
 ```
-roslaunch eurobench_benchmark_server madrob.launch 
+roslaunch eurobench_benchmark_core madrob.launch 
 OR
-roslaunch eurobench_benchmark_server beast.launch
+roslaunch eurobench_benchmark_core beast.launch
 ```
 
 Use the GUI to select the current robot, the benchmark to run, and specific settings for either the MADROB or BEAST environment.

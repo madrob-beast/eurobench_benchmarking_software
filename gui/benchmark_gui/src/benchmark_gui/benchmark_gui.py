@@ -84,7 +84,7 @@ class BenchmarkGui(Plugin):
         self.stop_button.clicked.connect(self.on_stopbutton_click)
 
         # Get robot names from BMS to fill the combo box
-        get_robot_names = rospy.ServiceProxy('bmserver/robot_names', BenchmarkServerRobotNames)
+        get_robot_names = rospy.ServiceProxy('bmcore/robot_names', BenchmarkCoreRobotNames)
         robot_names = get_robot_names()
 
         self.robot_combo = self._widget.findChild(QComboBox, 'robot_combo')
@@ -94,7 +94,7 @@ class BenchmarkGui(Plugin):
         self.robot_combo.currentTextChanged.connect(self.on_combobox_change)
 
         # Subscribe to benchmark state
-        rospy.Subscriber('bmserver/state', BenchmarkServerState, self.state_callback)
+        rospy.Subscriber('bmcore/state', BenchmarkCoreState, self.state_callback)
 
         context.add_widget(self._widget)
 
@@ -106,7 +106,7 @@ class BenchmarkGui(Plugin):
 
         run_number = self.run_spinbox.value()
 
-        start_benchmark = rospy.ServiceProxy('bmserver/start_benchmark', StartBenchmark)
+        start_benchmark = rospy.ServiceProxy('bmcore/start_benchmark', StartBenchmark)
 
         start_request = StartBenchmarkRequest()
         start_request.robot_name = robot_name
@@ -127,7 +127,7 @@ class BenchmarkGui(Plugin):
 
         run_number = self.run_spinbox.value()
 
-        start_benchmark = rospy.ServiceProxy('bmserver/start_benchmark', StartBenchmark)
+        start_benchmark = rospy.ServiceProxy('bmcore/start_benchmark', StartBenchmark)
 
         start_request = StartBenchmarkRequest()
         start_request.robot_name = robot_name
@@ -161,24 +161,24 @@ class BenchmarkGui(Plugin):
         self.testbed_yaml_edit.setText(yaml_filepath)
 
     def on_stopbutton_click(self):
-        stop_benchmark = rospy.ServiceProxy('bmserver/stop_benchmark', StopBenchmark)
+        stop_benchmark = rospy.ServiceProxy('bmcore/stop_benchmark', StopBenchmark)
         stop_benchmark()
 
     def state_callback(self, state):
-        self.server_status = state.status
+        self.core_status = state.status
 
         # Set start button enabled/disabled
         startbutton_enabled = True
 
         if(self.robot_combo.currentText() == ''
-        or state.status == BenchmarkServerState.RUNNING_BENCHMARK):
+        or state.status == BenchmarkCoreState.RUNNING_BENCHMARK):
             startbutton_enabled = False
 
         self.start_button.setEnabled(startbutton_enabled)
         self.start_rosbag_button.setEnabled(startbutton_enabled)
 
         # If benchmark is running: set label, disable comboboxes
-        if(state.status == BenchmarkServerState.RUNNING_BENCHMARK):
+        if(state.status == BenchmarkCoreState.RUNNING_BENCHMARK):
             self.benchmark_status_label.setText('Running benchmark')
             self.benchmark_status_label.setPalette(self.yellowPalette)
 
@@ -190,10 +190,10 @@ class BenchmarkGui(Plugin):
             self.robot_combo.setEnabled(True)
 
         # Set clock timer
-        self.set_timer_signal.emit(state.current_benchmark_seconds_passed, self.server_status == BenchmarkServerState.RUNNING_BENCHMARK)
+        self.set_timer_signal.emit(state.current_benchmark_seconds_passed, self.core_status == BenchmarkCoreState.RUNNING_BENCHMARK)
 
         # Set results screen and detail label
-        if self.server_status == BenchmarkServerState.RUNNING_BENCHMARK:
+        if self.core_status == BenchmarkCoreState.RUNNING_BENCHMARK:
             self.set_benchmark_info_signal.emit(state.current_benchmark_info)
             self.results_detail_label.setPalette(self.yellowPalette)
             self.results_detail_label.setText('(benchmark running)')
@@ -229,8 +229,8 @@ class BenchmarkGui(Plugin):
             self.results_textedit.setText(info.replace('"', ''))
 
     def shutdown_plugin(self):
-        shutdown_server = rospy.ServiceProxy('bmserver/shutdown', Empty)
-        shutdown_server()
+        shutdown_core = rospy.ServiceProxy('bmcore/shutdown', Empty)
+        shutdown_core()
 
         rospy.signal_shutdown('Shutting down')
 
