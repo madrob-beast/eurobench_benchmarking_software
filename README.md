@@ -13,15 +13,15 @@ cd ../
 catkin_make
 ```
 
-You should create an output directory to store benchmark results. The default location is `~/eurobench_output`, and can be configured in `config/general.yaml`.
+Note: The default output directory is `~/eurobench_output`, and can be configured in `config/general.yaml`.
 
 ## Running benchmarks
 
 Start the benchmark core in either MADROB or BEAST mode:
 ```
-roslaunch eurobench_benchmark_core madrob.launch 
+roslaunch eurobench_benchmark_core madrob_all.launch 
 OR
-roslaunch eurobench_benchmark_core beast.launch
+roslaunch eurobench_benchmark_core beast_all.launch
 ```
 
 Use the GUI to select the current robot, the benchmark to run, and specific settings for either the MADROB or BEAST environment.
