@@ -18,29 +18,44 @@ class PreprocessObject(BasePreprocess):
     def __init__(self, data_type):
         self.data_type = data_type
 
+        # Passage sensors values (a subset of the total number of sensors available from the testbed)
         self.cw_num_sensors = 5
         self.ccw_num_sensors = 5
         self.cw = np.zeros(self.cw_num_sensors)
         self.ccw = np.zeros(self.ccw_num_sensors)
+
+        # Door angular position
         self.door_angle = 0.0
 
+        # Passage is detected by checking when the height of the passage sensors becomes higher than a threshold
+        # The first occurrence of a raising through the threshold is indicates the humanoid has approached the door
+        # The last occurrence of a falling through the threshold indicates the humanoid has left the door
+        self.first_rising_edge_side = None
+        self.first_rising_edge_time = None
         self.last_falling_edge_side = None
         self.last_falling_edge_time = None
 
-        self.first_rising_edge_side = None
-        self.first_rising_edge_time = None
-
+        # This list contains the events and their timestamps as tuples (timestamp, event_name)
         self.events = list()
 
+        # Threshold of height in mm from ground used in detection of humanoid in passage sensors
         self.th = 500.0
+
+        # When the door is ajar (almost close) the passage sensors would detect the door.
+        # To avoid this, the sensors are ignored when the door is between the closed angle and this angle (rad).
         self.ajar_door_angle_th = 0.4
+
+        # The door is considered closed when it's absolute angle is less than this threshold (rad).
         self.closed_door_angle_th = 0.03
+
+        # The values from passage sensors is computed taking into account the height in mm of the door.
         self.door_height = 2000.0
 
+        # Publishers
         self.cw_pub = None
         self.ccw_pub = None
 
-        # Subscribers (instantiated last to avoid registering the callbacks before the attributes of self are completely instantiated)
+        # Subscribers
         self.door_sub = None
         self.cw_right_sub = None
         self.cw_left_sub = None
@@ -48,6 +63,9 @@ class PreprocessObject(BasePreprocess):
         self.ccw_left_sub = None
         self.door_proximity_timesync = None
         self.events_sequence_file = None
+
+        # Enable visualisation of passage sensors and door closing/opening events in the terminal
+        self.print_debug_info = False
 
     def start(self, benchmark_group, robot_name, run_number, start_time, testbed_conf):
         self.events_sequence_file = preprocess_utils.open_preprocessed_csv(benchmark_group, robot_name, run_number,
@@ -71,24 +89,23 @@ class PreprocessObject(BasePreprocess):
         self.door_proximity_timesync = message_filters.ApproximateTimeSynchronizer([self.cw_right_sub, self.cw_left_sub, self.ccw_right_sub, self.ccw_left_sub], 10, 0.1)
         self.door_proximity_timesync.registerCallback(self.door_proximity_callback)
 
-        # cw  → negative angles
-        # ccw → positive angles
-        print "\tcw0\tcw1\tcw2\tcw3\tcw4\t|\tccw0\tccw1\tccw2\tccw3\tccw4"
+        rospy.loginfo("Events sequence preprocess script started")
+
+        if self.print_debug_info:
+            print "\tcw0\tcw1\tcw2\tcw3\tcw4\t|\tccw0\tccw1\tccw2\tccw3\tccw4"
 
     def finish(self):
 
         try:
             self.door_sub.unregister()
             self.door_sub.unregister()
-
-            # for
             self.cw_right_sub.unregister()
             self.cw_left_sub.unregister()
             self.ccw_right_sub.unregister()
             self.ccw_left_sub.unregister()
             self.door_proximity_timesync = None
         except rospy.exceptions.ROSException:
-            rospy.logwarn("Could not unregister from subscribers in PreprocessObject.finish for events_sequence preprocess script.")
+            rospy.logwarn("Could not unregister from subscribers in PreprocessObject.finish in events_sequence preprocess script.")
 
         if self.first_rising_edge_side is not None:
             self.events.append((self.first_rising_edge_time,
@@ -102,8 +119,9 @@ class PreprocessObject(BasePreprocess):
         self.events.sort(key=lambda time_event: time_event[0])
 
         for time, event in self.events:
-            print time, '\t', event
-            self.door_velocity_file.write('%d.%d, %.1f\n' % (time.secs, time.nsecs, event))
+            if self.print_debug_info:
+                print time, '\t', event
+            self.events_sequence_file.write('%d.%d, %s\n' % (time.secs, time.nsecs, event))
 
         self.events_sequence_file.close()
 
@@ -121,20 +139,26 @@ class PreprocessObject(BasePreprocess):
         is_door_ajar_ccw = self.closed_door_angle_th < door.angle < self.ajar_door_angle_th
 
         if was_door_ajar_cw and not is_door_ajar_cw:
-            print "%.3f\to\to\to\to\to\t|\t" % door.angle
+            if self.print_debug_info:
+                print "%.3f\to\to\to\to\to\t|\t" % door.angle
         if is_door_ajar_cw and not was_door_ajar_cw:
-            print "%.3f\t×\t×\t×\t×\t×\t|\t" % door.angle
+            if self.print_debug_info:
+                print "%.3f\t×\t×\t×\t×\t×\t|\t" % door.angle
 
         if was_door_ajar_ccw and not is_door_ajar_ccw:
-            print "%.3f\t\t\t\t\t\t|\to\to\to\to\to" % door.angle
+            if self.print_debug_info:
+                print "%.3f\t\t\t\t\t\t|\to\to\to\to\to" % door.angle
         if is_door_ajar_ccw and not was_door_ajar_ccw:
-            print "%.3f\t\t\t\t\t\t|\t×\t×\t×\t×\t×" % door.angle
+            if self.print_debug_info:
+                print "%.3f\t\t\t\t\t\t|\t×\t×\t×\t×\t×" % door.angle
 
         if was_door_closed and not is_door_closed:
-            print "door opens (ajar)"
+            if self.print_debug_info:
+                print "door opens (ajar)"
             self.events.append((door.header.stamp, 'door_opens'))
         if is_door_closed and not was_door_closed:
-            print "door closes"
+            if self.print_debug_info:
+                print "door closes"
             self.events.append((door.header.stamp, 'door_closes'))
 
         self.door_angle = door.angle
@@ -169,36 +193,40 @@ class PreprocessObject(BasePreprocess):
         for i in range(self.cw_num_sensors):
             # rising edge on sensor cw i
             if self.cw[i] < self.th < new_cw[i]:
-                print "{angle:.3f}\t{cw_pre_tabs}↑{cw_post_tabs}\t|".format(angle=self.door_angle,
-                                                                            cw_pre_tabs='\t' * i,
-                                                                            cw_post_tabs='\t' * (self.cw_num_sensors - i - 1))
+                if self.print_debug_info:
+                    print "{angle:.3f}\t{cw_pre_tabs}↑{cw_post_tabs}\t|".format(angle=self.door_angle,
+                                                                                cw_pre_tabs='\t' * i,
+                                                                                cw_post_tabs='\t' * (self.cw_num_sensors - i - 1))
                 if self.first_rising_edge_side is None:
                     self.first_rising_edge_side = 'cw'
                     self.first_rising_edge_time = cw_stamps[i]
 
             # falling edge on sensor cw i
             if self.cw[i] > self.th > new_cw[i]:
-                print "{angle:.3f}\t{cw_pre_tabs}↓{cw_post_tabs}\t|".format(angle=self.door_angle,
-                                                                            cw_pre_tabs='\t' * i,
-                                                                            cw_post_tabs='\t' * (self.cw_num_sensors-i-1))
+                if self.print_debug_info:
+                    print "{angle:.3f}\t{cw_pre_tabs}↓{cw_post_tabs}\t|".format(angle=self.door_angle,
+                                                                                cw_pre_tabs='\t' * i,
+                                                                                cw_post_tabs='\t' * (self.cw_num_sensors-i-1))
                 self.last_falling_edge_side = 'cw'
                 self.last_falling_edge_time = cw_stamps[i]
 
         for i in range(self.ccw_num_sensors):
             # rising edge on sensor ccw i
             if self.ccw[i] < self.th < new_ccw[i]:
-                print "{angle:.3f}\t{cw_tabs}|{ccw_tabs}↑".format(angle=self.door_angle,
-                                                                  cw_tabs='\t' * self.cw_num_sensors,
-                                                                  ccw_tabs='\t' * (i + 1))
+                if self.print_debug_info:
+                    print "{angle:.3f}\t{cw_tabs}|{ccw_tabs}↑".format(angle=self.door_angle,
+                                                                      cw_tabs='\t' * self.cw_num_sensors,
+                                                                      ccw_tabs='\t' * (i + 1))
                 if self.first_rising_edge_side is None:
                     self.first_rising_edge_side = 'ccw'
                     self.first_rising_edge_time = ccw_stamps[i]
 
             # falling edge on sensor ccw i
             if self.ccw[i] > self.th > new_ccw[i]:
-                print "{angle:.3f}\t{cw_tabs}|{ccw_tabs}↓".format(angle=self.door_angle,
-                                                                  cw_tabs='\t'*self.cw_num_sensors,
-                                                                  ccw_tabs='\t' * (i + 1))
+                if self.print_debug_info:
+                    print "{angle:.3f}\t{cw_tabs}|{ccw_tabs}↓".format(angle=self.door_angle,
+                                                                      cw_tabs='\t'*self.cw_num_sensors,
+                                                                      ccw_tabs='\t' * (i + 1))
                 self.last_falling_edge_side = 'ccw'
                 self.last_falling_edge_time = ccw_stamps[i]
 
