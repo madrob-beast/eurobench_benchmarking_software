@@ -12,7 +12,7 @@ from exceptions import NotImplementedError
 from std_srvs.srv import Trigger
 from eurobench_bms_msgs_and_srvs.srv import StartRecording, StartRecordingRequest
 from benchmark_scripts.testbed_comm.madrob_testbed_comm import MadrobTestbedComm
-from benchmark_scripts.preprocess.madrob_preprocess import MadrobPreprocess
+from benchmark_scripts.preprocess.preprocess import Preprocess
 import benchmark_scripts.performance.madrob
 from benchmark_scripts.performance.madrob import *
 import benchmark_scripts.performance.beast
@@ -34,15 +34,18 @@ class Benchmark(object):
         self.start_recording_service = rospy.ServiceProxy('/eurobench_rosbag_controller/start_recording', StartRecording)
         self.stop_recording_service = rospy.ServiceProxy('/eurobench_rosbag_controller/stop_recording', Trigger)
 
+        self.preprocess = Preprocess(self.benchmark_group)
+
         if benchmark_group == 'MADROB':
             self.testbed_device = 'door'
             self.testbed_comm = MadrobTestbedComm(self.config['benchmarks'])
-            self.preprocess = MadrobPreprocess(self.output_dir)
 
             self.performance_indicators = benchmark_scripts.performance.madrob.__all__
 
         if benchmark_group == 'BEAST':
             self.testbed_device = 'trolley'
+
+            self.performance_indicators = benchmark_scripts.performance.beast.__all__
     
 
     def setup(self, robot_name, run_number, rosbag_path, testbed_conf_path):
@@ -113,9 +116,11 @@ class Benchmark(object):
                 rospy.logerr('Could not start recording rosbag')
                 return
 
+        with open(self.testbed_conf_path, 'r') as testbed_conf_file:
+            self.testbed_conf = yaml.load(testbed_conf_file)
 
-        # Start preprocessing script
-        self.preprocess.start(self.robot_name, self.run_number, self.start_time, rosbag_path=self.rosbag_path)
+        # Start preprocessing scripts
+        self.preprocess.start(self.robot_name, self.run_number, self.start_time, self.testbed_conf, rosbag_path=self.rosbag_path)
 
         # Loop while benchmark is running
         while not self.terminated:
@@ -136,7 +141,7 @@ class Benchmark(object):
             performance_indicator = globals()[performance_indicator_module].PerformanceIndicator(self.output_dir)
 
             try:
-                performance_indicator.run(preprocessed_filenames_dict, self.testbed_conf_path, self.start_time)
+                performance_indicator.run(preprocessed_filenames_dict, self.testbed_conf, self.start_time)
             except Exception as e:
                 rospy.logerr('Error in performance indicator "' + performance_indicator_module + '": ' + str(e))
                 continue

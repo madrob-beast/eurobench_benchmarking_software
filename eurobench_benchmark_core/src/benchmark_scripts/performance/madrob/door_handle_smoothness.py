@@ -9,9 +9,7 @@ from benchmark_scripts.performance.base_performance import BasePerformance
 # Door Handle Smoothness
 class PerformanceIndicator(BasePerformance):
 
-    def run(self, preprocessed_filenames_dict, testbed_configuration_filepath, start_time):
-        with open(testbed_configuration_filepath, 'r') as file:
-            self.testbed_conf = yaml.load(file)
+    def run(self, preprocessed_filenames_dict, testbed_conf, start_time):
 
         force_df = pd.read_csv(preprocessed_filenames_dict['handle_force'])
         
@@ -19,7 +17,7 @@ class PerformanceIndicator(BasePerformance):
 
         for index, row in force_df.iterrows():
             if index > 0:
-                force_delta_sum += abs(row['force'] - force_df.loc[index-1, 'force']) / (row['timestamp'] - force_df.loc[index-1, 'timestamp'])
+                force_delta_sum += abs(row['handle_force'] - force_df.loc[index-1, 'handle_force']) / (row['timestamp'] - force_df.loc[index-1, 'timestamp'])
 
         smoothness = 10000 / (force_delta_sum/len(force_df)) # Higher smoothness = lower force deltas
 
