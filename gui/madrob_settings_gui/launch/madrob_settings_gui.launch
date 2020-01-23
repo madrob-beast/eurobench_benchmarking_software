@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <launch>
   <node pkg="madrob_settings_gui" type="madrob_settings_gui" name="madrob_settings_gui_node"
         output="screen">
