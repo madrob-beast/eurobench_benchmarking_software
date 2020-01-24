@@ -29,6 +29,8 @@ class madrob_settings_gui(Plugin):
         self._widget.setWindowTitle('MADROB Settings')
 
         self.benchmark_type_combo = self._widget.findChild(QComboBox, 'benchmark_type_combo')
+        self.door_opening_side_combo = self._widget.findChild(QComboBox, 'door_opening_side_combo')
+        self.robot_approach_side_combo = self._widget.findChild(QComboBox, 'robot_approach_side_combo')
 
         self.calibration_button = self._widget.findChild(QPushButton, 'show_hide_calib')
         self.calibration_button.clicked.connect(self.toggle_calibration_menu)
@@ -60,6 +62,8 @@ class madrob_settings_gui(Plugin):
         madrob_settings = get_madrob_settings()
 
         self.benchmark_type_combo.addItems(madrob_settings.benchmark_types)
+        self.door_opening_side_combo.addItems(['CW', 'CCW'])
+        self.robot_approach_side_combo.addItems(['CW', 'CCW'])
 
         context.add_widget(self._widget)
 
@@ -154,14 +158,16 @@ class madrob_settings_gui(Plugin):
             rospy.logerr('Could not calibrate door encoder. Position: %d' % (position))
 
     def run_rospy_node(self):
-        self.benchmark_type_service = rospy.Service(
-            'madrob/gui/benchmark_type', MadrobBenchmarkType, self.benchmark_type_callback)
+        self.benchmark_params_service = rospy.Service(
+            'madrob/gui/benchmark_params', MadrobBenchmarkParams, self.benchmark_params_callback)
 
         self.door_node_name = rospy.get_param('door_node_name')
         self.handle_node_name = rospy.get_param('handle_node_name')
 
-    def benchmark_type_callback(self, request):
-        benchmark_type_response = MadrobBenchmarkTypeResponse()
-        benchmark_type_response.benchmark_type = self.benchmark_type_combo.currentText()
+    def benchmark_params_callback(self, request):
+        benchmark_params_response = MadrobBenchmarkParamsResponse()
+        benchmark_params_response.benchmark_type = self.benchmark_type_combo.currentText()
+        benchmark_params_response.door_opening_side = self.door_opening_side_combo.currentText()
+        benchmark_params_response.robot_approach_side = self.robot_approach_side_combo.currentText()
 
-        return benchmark_type_response
+        return benchmark_params_response
