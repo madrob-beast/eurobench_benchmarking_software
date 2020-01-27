@@ -5,11 +5,11 @@ from os import path
 import pandas as pd
 from benchmark_scripts.performance.base_performance import BasePerformance
 
-# Overall Execution Time
+# Passage Time
 class PerformanceIndicator(BasePerformance):
 
     def run(self, preprocessed_filenames_dict, testbed_conf, start_time):
-        execution_time = 'TIMEOUT'
+        passage_time = 'TIMEOUT'
 
         events_df = pd.read_csv(preprocessed_filenames_dict['events_sequence'], skipinitialspace=True)
 
@@ -30,9 +30,14 @@ class PerformanceIndicator(BasePerformance):
 
                 # Check if the last door closing event occurs after the robot moves to destination
                 if last_door_close['timestamp'] > robot_moves_to_dest['timestamp']:
-                    execution_time = float(last_door_close['timestamp']) - float(events_df.loc[events_df['events_sequence'] == 'benchmark_start']['timestamp'])
+                    # Finally, check if the 'handle_is_touched' event exists
+                    handle_is_touched_events = events_df.loc[events_df['events_sequence'] == 'handle_is_touched']
+                    if len(handle_is_touched_events) > 0:
+                        first_handle_touch = handle_is_touched_events.iloc[0]
+
+                        passage_time = float(last_door_close['timestamp']) - float(first_handle_touch['timestamp'])
 
         # Write result yaml file
-        filepath = path.join(self.output_dir, 'execution_time_%s.yaml' % (start_time.strftime('%Y%m%d_%H%M%S')))
+        filepath = path.join(self.output_dir, 'passage_time_%s.yaml' % (start_time.strftime('%Y%m%d_%H%M%S')))
         with open(filepath, 'w+') as result_file:
-            yaml.dump({'Overall Execution Time': execution_time}, result_file, default_flow_style=False)
+            yaml.dump({'Passage Time': passage_time}, result_file, default_flow_style=False)
