@@ -2,8 +2,6 @@
 
 <launch>
 
-  <include file="$(find madrob)/launch/madrob_dummy.launch" />
-
   <include file="$(find eurobench_benchmark_core)/launch/madrob.launch" />
 
   <include file="$(find benchmark_gui)/launch/madrob_gui.launch" />
