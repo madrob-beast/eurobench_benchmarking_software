@@ -21,7 +21,7 @@ class PreprocessObject(BasePreprocess):
         self.timestamp_list = None
         self.door_sub = None
         self.moving_average_width = None
-        self.angular_acceleration_file = None
+        self.angular_velocity_file = None
         self.benchmark_group = None
         self.robot_name = None
         self.run_number = None
@@ -77,21 +77,21 @@ class PreprocessObject(BasePreprocess):
         # Apply moving average to angle
         df['angle'] = df['angle'].rolling(window=filtering_window_length, center=True).mean()
 
-        # Compute acceleration using the Savitzky-Golay filter
-        df['angular_acceleration'] = savgol_filter(df['angle'], window_length=11, polyorder=2, deriv=2, delta=delta)
-        angular_acceleration_list = list(df['angular_acceleration'])
+        # Compute velocity using the Savitzky-Golay filter
+        df['angular_velocity'] = savgol_filter(df['angle'], window_length=11, polyorder=2, deriv=1, delta=delta)
+        angular_velocity_list = list(df['angular_velocity'])
 
         if self.print_debug_info:
-            # Plot angle and acceleration
+            # Plot angle and velocity
             df.plot(x='time')
             plt.show()
 
-        self.angular_acceleration_file = preprocess_utils.open_preprocessed_csv(self.benchmark_group, self.robot_name, self.run_number, self.start_time, self.data_type)
+        self.angular_velocity_file = preprocess_utils.open_preprocessed_csv(self.benchmark_group, self.robot_name, self.run_number, self.start_time, self.data_type)
 
-        for time, acc in zip(self.timestamp_list, angular_acceleration_list):
-            self.angular_acceleration_file.write('%.6f, %.10f\n' % (time, acc))
+        for time, vel in zip(self.timestamp_list, angular_velocity_list):
+            self.angular_velocity_file.write('%.6f, %.10f\n' % (time, vel))
 
-        self.angular_acceleration_file.close()
+        self.angular_velocity_file.close()
 
         rospy.loginfo("Preprocess script finished: {name}".format(name=self.data_type))
-        return self.data_type, self.angular_acceleration_file.name
+        return self.data_type, self.angular_velocity_file.name

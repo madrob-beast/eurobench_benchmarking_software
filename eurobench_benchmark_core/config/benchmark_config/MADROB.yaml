@@ -3,6 +3,9 @@ handle_node_name: madrob/handle
 passage_node_name: madrob/passage
 # Alternatively the node names dummy_door, dummy_handle and dummy_passage can be used when the MADROB dummy node is launched.
 
+# Length of window for moving average and Savitzky-Golay filter, in seconds
+door_angle_filter_window_length: 0.2
+
 benchmarks:
   No Force:
     id: 1
