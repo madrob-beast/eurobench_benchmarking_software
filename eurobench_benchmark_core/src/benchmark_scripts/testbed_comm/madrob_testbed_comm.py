@@ -16,10 +16,13 @@ class MadrobTestbedComm(BaseTestbedComm):
 
     def setup_testbed(self):
         # Based on the currently selected benchmark type, set the brake_enabled and LUT values
-        get_benchmark_type_name = rospy.ServiceProxy('madrob/gui/benchmark_type', MadrobBenchmarkType)
-        response = get_benchmark_type_name()
+        get_benchmark_params = rospy.ServiceProxy('madrob/gui/benchmark_params', MadrobBenchmarkParams)
+        response = get_benchmark_params()
         self.current_benchmark_name = response.benchmark_type
         self.current_benchmark_type = self.config[self.current_benchmark_name]
+
+        self.door_opening_side = response.door_opening_side
+        self.robot_approach_side = response.robot_approach_side
 
         # Set door controller mode
         door_node_name = rospy.get_param('door_node_name')
@@ -79,6 +82,8 @@ class MadrobTestbedComm(BaseTestbedComm):
         testbed_params['Door controller mode'] = SetDoorControllerModeRequest.MODE_LUT if self.current_benchmark_type['brake_enabled'] else SetDoorControllerModeRequest.MODE_DISABLED
         testbed_params['LUTcw'] = self.current_benchmark_type['lut']
         testbed_params['LUTccw'] = list(reversed(self.current_benchmark_type['lut']))
+        testbed_params['Door opening side'] = self.door_opening_side
+        testbed_params['Robot approach side'] = self.robot_approach_side
 
         with open(filepath, 'w') as file:
             yaml.dump(testbed_params, file, default_flow_style=False)

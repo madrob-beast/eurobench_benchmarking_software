@@ -1,0 +1,4 @@
+---
+string benchmark_type
+string door_opening_side
+string robot_approach_side

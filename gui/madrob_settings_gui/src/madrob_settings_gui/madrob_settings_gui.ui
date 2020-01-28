@@ -32,7 +32,7 @@
   <widget class="QLabel" name="benchmark_type_label">
    <property name="geometry">
     <rect>
-     <x>100</x>
+     <x>94</x>
      <y>35</y>
      <width>151</width>
      <height>31</height>
@@ -53,7 +53,7 @@
   <widget class="QComboBox" name="benchmark_type_combo">
    <property name="geometry">
     <rect>
-     <x>265</x>
+     <x>273</x>
      <y>40</y>
      <width>146</width>
      <height>25</height>
@@ -317,11 +317,77 @@
     </property>
    </widget>
   </widget>
+  <widget class="QLabel" name="door_opening_side_label">
+   <property name="geometry">
+    <rect>
+     <x>101</x>
+     <y>75</y>
+     <width>151</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>14</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>Door opening side:</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="door_opening_side_combo">
+   <property name="geometry">
+    <rect>
+     <x>273</x>
+     <y>80</y>
+     <width>146</width>
+     <height>25</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="robot_approach_side_label">
+   <property name="geometry">
+    <rect>
+     <x>104</x>
+     <y>115</y>
+     <width>161</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>14</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>Robot approach side:</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="robot_approach_side_combo">
+   <property name="geometry">
+    <rect>
+     <x>273</x>
+     <y>120</y>
+     <width>146</width>
+     <height>25</height>
+    </rect>
+   </property>
+  </widget>
   <zorder>calib_groupbox</zorder>
   <zorder>line</zorder>
   <zorder>benchmark_type_label</zorder>
   <zorder>benchmark_type_combo</zorder>
   <zorder>show_hide_calib</zorder>
+  <zorder>door_opening_side_label</zorder>
+  <zorder>door_opening_side_combo</zorder>
+  <zorder>robot_approach_side_label</zorder>
+  <zorder>robot_approach_side_combo</zorder>
  </widget>
  <resources/>
  <connections/>

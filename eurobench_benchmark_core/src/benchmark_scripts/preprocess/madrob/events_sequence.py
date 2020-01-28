@@ -8,7 +8,7 @@ import message_filters
 from benchmark_scripts.preprocess.base_preprocess import BasePreprocess
 from benchmark_scripts.preprocess import preprocess_utils
 
-from madrob_msgs.msg import Door, Passage
+from madrob_msgs.msg import Door, Passage, Handle
 from std_msgs.msg import Float64
 
 import numpy as np
@@ -26,6 +26,9 @@ class PreprocessObject(BasePreprocess):
 
         # Door angular position
         self.door_angle = 0.0
+
+        # Handle force signal
+        self.handle_force = 0.0
 
         # Passage is detected by checking when the height of the passage sensors becomes higher than a threshold
         # The first occurrence of a raising through the threshold is indicates the humanoid has approached the door
@@ -51,6 +54,14 @@ class PreprocessObject(BasePreprocess):
         # The values from passage sensors is computed taking into account the height in mm of the door.
         self.door_height = 2000.0
 
+        # An offset, which if subtracted from the handle force value, gives us the force signal
+        # e.g. force 750, offset 750: force signal = 0
+        # TODO: This should either be 0, or a door calibration constant
+        self.handle_force_offset = 750
+
+        # The door is being pushed / pulled when the absolute force signal is greater than this threshold
+        self.handle_force_th = 200 # TODO need more sensor data
+
         # Publishers
         self.cw_pub = None
         self.ccw_pub = None
@@ -61,6 +72,7 @@ class PreprocessObject(BasePreprocess):
         self.cw_left_sub = None
         self.ccw_right_sub = None
         self.ccw_left_sub = None
+        self.handle_sub = None
         self.door_proximity_timesync = None
         self.events_sequence_file = None
 
@@ -71,9 +83,15 @@ class PreprocessObject(BasePreprocess):
         self.events_sequence_file = preprocess_utils.open_preprocessed_csv(benchmark_group, robot_name, run_number,
                                                                            start_time, self.data_type)
 
+        # start_time event
+        start_time_split = testbed_conf['Start time'].split('.')
+        start_time_ros = rospy.Time(int(start_time_split[0]), int(start_time_split[1]))
+        self.events.append((start_time_ros, 'benchmark_start'))
+
         # Params
         door_node_name = rospy.get_param('door_node_name')
         passage_node_name = rospy.get_param('passage_node_name')
+        handle_node_name = rospy.get_param('handle_node_name')
         output_passage_topic_name = rospy.get_param('output_passage_topic_name', 'madrob/preprocessed_data/passage')
 
         # Publishers
@@ -86,6 +104,7 @@ class PreprocessObject(BasePreprocess):
         self.cw_left_sub = message_filters.Subscriber('/' + passage_node_name + '/cw_left', Passage)
         self.ccw_right_sub = message_filters.Subscriber('/' + passage_node_name + '/ccw_right', Passage)
         self.ccw_left_sub = message_filters.Subscriber('/' + passage_node_name + '/ccw_left', Passage)
+        self.handle_sub = rospy.Subscriber('/' + handle_node_name + '/state', Handle, self.handle_state_callback)
         self.door_proximity_timesync = message_filters.ApproximateTimeSynchronizer([self.cw_right_sub, self.cw_left_sub, self.ccw_right_sub, self.ccw_left_sub], 10, 0.1)
         self.door_proximity_timesync.registerCallback(self.door_proximity_callback)
 
@@ -98,12 +117,13 @@ class PreprocessObject(BasePreprocess):
 
         try:
             self.door_sub.unregister()
-            self.door_sub.unregister()
             self.cw_right_sub.unregister()
             self.cw_left_sub.unregister()
             self.ccw_right_sub.unregister()
             self.ccw_left_sub.unregister()
+            self.handle_sub.unregister()
             self.door_proximity_timesync = None
+
         except rospy.exceptions.ROSException:
             rospy.logwarn("Could not unregister from subscribers in PreprocessObject.finish in events_sequence preprocess script.")
 
@@ -237,3 +257,14 @@ class PreprocessObject(BasePreprocess):
         for i in range(self.ccw_num_sensors):
             self.ccw[i] = new_ccw[i]
             self.ccw_pub[i].publish(self.ccw[i])
+
+    def handle_state_callback(self, handle):
+        force_signal = handle.force - self.handle_force_offset
+
+        was_handle_untouched = -self.handle_force_th < self.handle_force < self.handle_force_th
+        is_handle_untouched = -self.handle_force_th < force_signal < self.handle_force_th
+
+        if was_handle_untouched and not is_handle_untouched:
+            self.events.append((handle.header.stamp, 'handle_is_touched'))
+
+        self.handle_force = force_signal
