@@ -16,9 +16,9 @@ class PerformanceIndicator(BasePerformance):
         # Check if there's a 'handle_is_touched' event
         handle_is_touched_events = events_df.loc[events_df['events_sequence'] == 'handle_is_touched']
         if len(handle_is_touched_events) > 0:
-            first_handle_touch = handle_is_touched_events.iloc[0]
+            handle_is_touched = handle_is_touched_events.iloc[0]
 
-            time_to_handle = float(first_handle_touch['timestamp']) - float(events_df.loc[events_df['events_sequence'] == 'benchmark_start']['timestamp'])
+            time_to_handle = float(handle_is_touched['timestamp']) - float(events_df.loc[events_df['events_sequence'] == 'benchmark_start']['timestamp'])
 
         # Write result yaml file
         filepath = path.join(self.output_dir, 'time_to_handle_%s.yaml' % (start_time.strftime('%Y%m%d_%H%M%S')))

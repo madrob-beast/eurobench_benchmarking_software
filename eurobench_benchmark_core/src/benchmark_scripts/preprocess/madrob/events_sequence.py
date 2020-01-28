@@ -62,6 +62,9 @@ class PreprocessObject(BasePreprocess):
         # The door is being pushed / pulled when the absolute force signal is greater than this threshold
         self.handle_force_th = 200 # TODO need more sensor data
 
+        # We only need the first handle_is_touched event, so when it happens, this flag is set
+        self.handle_has_been_touched = False
+
         # Publishers
         self.cw_pub = None
         self.ccw_pub = None
@@ -264,7 +267,8 @@ class PreprocessObject(BasePreprocess):
         was_handle_untouched = -self.handle_force_th < self.handle_force < self.handle_force_th
         is_handle_untouched = -self.handle_force_th < force_signal < self.handle_force_th
 
-        if was_handle_untouched and not is_handle_untouched:
+        if was_handle_untouched and not is_handle_untouched and not self.handle_has_been_touched:
             self.events.append((handle.header.stamp, 'handle_is_touched'))
+            self.handle_has_been_touched = True
 
         self.handle_force = force_signal
