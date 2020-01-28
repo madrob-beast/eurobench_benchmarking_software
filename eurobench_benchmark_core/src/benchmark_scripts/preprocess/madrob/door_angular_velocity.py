@@ -89,7 +89,8 @@ class PreprocessObject(BasePreprocess):
         self.angular_velocity_file = preprocess_utils.open_preprocessed_csv(self.benchmark_group, self.robot_name, self.run_number, self.start_time, self.data_type)
 
         for time, vel in zip(self.timestamp_list, angular_velocity_list):
-            self.angular_velocity_file.write('%.6f, %.10f\n' % (time, vel))
+            if not np.math.isnan(vel):
+                self.angular_velocity_file.write('%.6f, %.10f\n' % (time, vel))
 
         self.angular_velocity_file.close()
 
