@@ -42,7 +42,7 @@ class BenchmarkCore(object):
         rospy.loginfo('\n---\n STARTING BENCHMARK: %s | Robot name: %s | Run %d\n---' %
                       (self.benchmark_group, request.robot_name, request.run_number))
 
-        self.current_benchmark = Benchmark(self.benchmark_group, self.config)
+        benchmark = Benchmark(self.benchmark_group, self.config)
 
         rosbag_path = None
         testbed_conf_path = None
@@ -50,7 +50,9 @@ class BenchmarkCore(object):
             rosbag_path = request.rosbag_path
             testbed_conf_path = request.testbed_conf_path
 
-        self.current_benchmark.setup(request.robot_name, request.run_number, rosbag_path, testbed_conf_path)
+        benchmark.setup(request.robot_name, request.run_number, rosbag_path, testbed_conf_path)
+        
+        self.current_benchmark = benchmark
 
         # Execute benchmark in a new thread
         threading.Thread(target=self.execute_benchmark).start()
@@ -77,10 +79,16 @@ class BenchmarkCore(object):
 
     def shutdown_callback(self, request):
         if self.current_benchmark:
-            self.current_benchmark.save_result()
+            self.current_benchmark.terminated = True
+
+        # Shutdown in one second
+        rospy.Timer(rospy.Duration(1), self.shutdown, oneshot=True)        
 
         response = EmptyResponse()
         return response
+
+    def shutdown(self, _):
+        rospy.signal_shutdown('Shutting down')
 
     def madrob_settings_callback(self, request):
         madrob_settings_response = MadrobSettingsResponse()

@@ -2,7 +2,7 @@
 
 import rospy
 import rosnode
-from std_srvs.srv import Trigger, TriggerResponse
+from std_srvs.srv import Trigger, TriggerResponse, Empty, EmptyResponse
 from eurobench_bms_msgs_and_srvs.srv import StartRecording, StartRecordingResponse, PlayRosbag, PlayRosbagResponse, StopBenchmark
 
 import os
@@ -20,6 +20,8 @@ class RosbagController():
         self.stop_rosbag_service = rospy.Service('/eurobench_rosbag_controller/stop_rosbag', Trigger, self.stop_rosbag)
         self.playing_process = None
         self.playing = False
+
+        self.shutdown_service = rospy.Service('/eurobench_rosbag_controller/shutdown', Empty, self.shutdown_callback)
 
         try:
             rospy.wait_for_service('bmcore/stop_benchmark', timeout=5.0)
@@ -93,6 +95,19 @@ class RosbagController():
                         self.stop_benchmark()
 
             rate.sleep()
+
+    def shutdown_callback(self, _):
+        self.stop_recording(None)
+        self.stop_rosbag(None)
+
+        # Shutdown in one second
+        rospy.Timer(rospy.Duration(1), self.shutdown, oneshot=True)        
+
+        response = EmptyResponse()
+        return response
+
+    def shutdown(self, _):
+        rospy.signal_shutdown('Shutting down')
 
 
 if __name__ == "__main__":

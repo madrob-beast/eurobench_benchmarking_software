@@ -32,7 +32,7 @@
   <widget class="QLabel" name="benchmark_type_label">
    <property name="geometry">
     <rect>
-     <x>94</x>
+     <x>93</x>
      <y>35</y>
      <width>151</width>
      <height>31</height>
@@ -53,7 +53,7 @@
   <widget class="QComboBox" name="benchmark_type_combo">
    <property name="geometry">
     <rect>
-     <x>273</x>
+     <x>291</x>
      <y>40</y>
      <width>146</width>
      <height>25</height>
@@ -320,9 +320,9 @@
   <widget class="QLabel" name="door_opening_side_label">
    <property name="geometry">
     <rect>
-     <x>101</x>
+     <x>93</x>
      <y>75</y>
-     <width>151</width>
+     <width>170</width>
      <height>31</height>
     </rect>
    </property>
@@ -341,7 +341,7 @@
   <widget class="QComboBox" name="door_opening_side_combo">
    <property name="geometry">
     <rect>
-     <x>273</x>
+     <x>291</x>
      <y>80</y>
      <width>146</width>
      <height>25</height>
@@ -351,9 +351,9 @@
   <widget class="QLabel" name="robot_approach_side_label">
    <property name="geometry">
     <rect>
-     <x>104</x>
+     <x>93</x>
      <y>115</y>
-     <width>161</width>
+     <width>190</width>
      <height>31</height>
     </rect>
    </property>
@@ -372,7 +372,7 @@
   <widget class="QComboBox" name="robot_approach_side_combo">
    <property name="geometry">
     <rect>
-     <x>273</x>
+     <x>291</x>
      <y>120</y>
      <width>146</width>
      <height>25</height>

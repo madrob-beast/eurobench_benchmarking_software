@@ -7,7 +7,7 @@
 
   <include file="$(find eurobench_rosbag_controller)/launch/controller.launch" />
 
-  <node name="eurobench_benchmark_core" pkg="eurobench_benchmark_core" type="benchmark_core.py" output="screen">
+  <node name="eurobench_benchmark_core" pkg="eurobench_benchmark_core" type="benchmark_core.py" respawn="true" output="screen">
     <param name="benchmark_group" value="MADROB" />
   </node>
 

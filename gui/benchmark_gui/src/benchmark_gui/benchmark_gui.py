@@ -39,8 +39,14 @@ class BenchmarkGui(Plugin):
         self.robot_name_label = self._widget.findChild(QLabel, 'robot_name_label')
         self.benchmark_status_label = self._widget.findChild(QLabel, 'status_label')
 
+        self.benchmark_group = rospy.get_param('benchmark_group')
+
         self.benchmark_name_label = self._widget.findChild(QLabel, 'benchmark_name_label')
-        self.benchmark_name_label.setText(rospy.get_param('benchmark_group'))
+        self.benchmark_name_label.setText(self.benchmark_group)
+
+        self.core_status_label = self._widget.findChild(QLabel, 'core_status_label')
+        self.rosbag_controller_status_label = self._widget.findChild(QLabel, 'rosbag_controller_status_label')
+        self.testbed_status_label = self._widget.findChild(QLabel, 'testbed_status_label')
 
         self.clock_label = self._widget.findChild(QLabel, 'clock_label')
 
@@ -49,6 +55,9 @@ class BenchmarkGui(Plugin):
 
         self.yellowPalette = QPalette()
         self.yellowPalette.setColor(self.benchmark_status_label.foregroundRole(), Qt.darkYellow)
+
+        self.redPalette = QPalette()
+        self.redPalette.setColor(self.benchmark_status_label.foregroundRole(), Qt.red)
 
         self.blackPalette = QPalette()
         self.blackPalette.setColor(self.benchmark_status_label.foregroundRole(), Qt.black)
@@ -62,6 +71,9 @@ class BenchmarkGui(Plugin):
         self.results_detail_label = self._widget.findChild(QLabel, 'results_detail_label')
 
         self.run_spinbox = self._widget.findChild(QSpinBox, 'run_spinbox')
+
+        self.restart_core_and_rosbag_button = self._widget.findChild(QPushButton, 'restart_core_and_rosbag_button')
+        self.restart_core_and_rosbag_button.clicked.connect(self.shutdown_core_and_rosbag_controller)
 
         self.rosbag_path_edit = self._widget.findChild(QLineEdit, 'rosbag_path_edit')
         self.rosbag_path_browse = self._widget.findChild(QPushButton, 'rosbag_path_browse')
@@ -95,6 +107,14 @@ class BenchmarkGui(Plugin):
 
         # Subscribe to benchmark state
         rospy.Subscriber('bmcore/state', BenchmarkCoreState, self.state_callback)
+
+        # Status of required nodes
+        self.benchmark_core_available = False
+        self.rosbag_controller_available = False
+        self.testbed_node_available = False
+
+        # Run heartbeat checks for required nodes (every second)
+        rospy.Timer(rospy.Duration(1), self.check_required_nodes)
 
         context.add_widget(self._widget)
 
@@ -167,15 +187,27 @@ class BenchmarkGui(Plugin):
     def state_callback(self, state):
         self.core_status = state.status
 
-        # Set start button enabled/disabled
-        startbutton_enabled = True
+        # Live benchmark: requires 'robot name' combobox to be set, and testbed node to be running
+        live_benchmark_can_start = True
 
         if(self.robot_combo.currentText() == ''
-        or state.status == BenchmarkCoreState.RUNNING_BENCHMARK):
-            startbutton_enabled = False
+        or state.status == BenchmarkCoreState.RUNNING_BENCHMARK
+        or not self.benchmark_core_available
+        or not self.rosbag_controller_available
+        or not self.testbed_node_available):
+            live_benchmark_can_start = False
 
-        self.start_button.setEnabled(startbutton_enabled)
-        self.start_rosbag_button.setEnabled(startbutton_enabled)
+        self.start_button.setEnabled(live_benchmark_can_start)
+
+        # Offline benchmark: only requires benchmark core and rosbag controller
+        offline_benchmark_can_start = True
+
+        if(state.status == BenchmarkCoreState.RUNNING_BENCHMARK
+        or not self.benchmark_core_available
+        or not self.rosbag_controller_available):
+            offline_benchmark_can_start = False
+
+        self.start_rosbag_button.setEnabled(offline_benchmark_can_start)
 
         # If benchmark is running: set label, disable comboboxes
         if(state.status == BenchmarkCoreState.RUNNING_BENCHMARK):
@@ -229,9 +261,6 @@ class BenchmarkGui(Plugin):
             self.results_textedit.setText(info.replace('"', ''))
 
     def shutdown_plugin(self):
-        shutdown_core = rospy.ServiceProxy('bmcore/shutdown', Empty)
-        shutdown_core()
-
         rospy.signal_shutdown('Shutting down')
 
     def save_settings(self, plugin_settings, instance_settings):
@@ -241,6 +270,70 @@ class BenchmarkGui(Plugin):
     def restore_settings(self, plugin_settings, instance_settings):
         # Restore intrinsic configuration
         pass
+
+    def check_required_nodes(self, _):
+        # TODO These checks may not be enough: especially for the testbed nodes, where we are only checking for a service from the door node, to assume that all of the testbed's topics are alive
+        
+        # Benchmark core
+        try:
+            rospy.wait_for_service('bmcore/start_benchmark', timeout=0.5)
+            self.benchmark_core_available = True
+        except rospy.ROSException:
+            self.benchmark_core_available = False
+        
+        # Rosbag controller
+        try:
+            rospy.wait_for_service('/eurobench_rosbag_controller/start_recording', timeout=0.5)
+            self.rosbag_controller_available = True
+        except rospy.ROSException:
+            self.rosbag_controller_available = False
+
+        # Testbed
+        if(self.benchmark_group == 'MADROB'):
+            door_node_name = rospy.get_param('door_node_name')
+            set_mode_service_name = '/' + door_node_name + '/set_mode'
+
+            try:
+                rospy.wait_for_service(set_mode_service_name, timeout=0.5)
+                self.testbed_node_available = True
+            except rospy.ROSException:
+                self.testbed_node_available = False
+
+
+        if(self.benchmark_group == 'BEAST'):
+            # TODO
+            pass
+
+        self.update_required_node_labels()
+
+    def update_required_node_labels(self):
+        if self.benchmark_core_available:
+            self.core_status_label.setText('OK')
+            self.core_status_label.setPalette(self.greenPalette)
+        else:
+            self.core_status_label.setText('Off')
+            self.core_status_label.setPalette(self.redPalette)
+
+        if self.rosbag_controller_available:
+            self.rosbag_controller_status_label.setText('OK')
+            self.rosbag_controller_status_label.setPalette(self.greenPalette)
+        else:
+            self.rosbag_controller_status_label.setText('Off')
+            self.rosbag_controller_status_label.setPalette(self.redPalette)
+
+        if self.testbed_node_available:
+            self.testbed_status_label.setText('OK')
+            self.testbed_status_label.setPalette(self.greenPalette)
+        else:
+            self.testbed_status_label.setText('Off')
+            self.testbed_status_label.setPalette(self.redPalette)
+
+    def shutdown_core_and_rosbag_controller(self):
+        shutdown_core = rospy.ServiceProxy('bmcore/shutdown', Empty)
+        shutdown_core()
+
+        shutdown_rosbag_controller = rospy.ServiceProxy('/eurobench_rosbag_controller/shutdown', Empty)
+        shutdown_rosbag_controller()
 
     def get_cached_dir(self, dir_type):
         output_dir = path.expanduser(rospy.get_param('benchmark_output_directory'))

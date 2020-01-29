@@ -14,6 +14,8 @@ class MadrobTestbedComm(BaseTestbedComm):
         self.current_benchmark_name = None
         self.current_benchmark_type = None
 
+        self.stop_benchmark = rospy.ServiceProxy('bmcore/stop_benchmark', StopBenchmark)
+
     def setup_testbed(self):
         # Based on the currently selected benchmark type, set the brake_enabled and LUT values
         get_benchmark_params = rospy.ServiceProxy('madrob/gui/benchmark_params', MadrobBenchmarkParams)
@@ -31,8 +33,8 @@ class MadrobTestbedComm(BaseTestbedComm):
         try:
             rospy.wait_for_service(set_mode_service_name, timeout=5.0)
         except rospy.ROSException:
-            rospy.logfatal(set_mode_service_name + ' service unavailable.')
-            rospy.signal_shutdown('MADROB door node unavailable')
+            rospy.logerr(set_mode_service_name + ' service unavailable.')
+            self.stop_benchmark()
 
         set_door_mode = rospy.ServiceProxy(set_mode_service_name, SetDoorControllerMode)
 
