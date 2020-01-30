@@ -136,11 +136,10 @@ class Benchmark(object):
 
         # Calculate PIs - Run all pre-processing scripts
         for performance_indicator_module in self.performance_indicators:
-            performance_indicator = globals()[performance_indicator_module].PerformanceIndicator(self.output_dir)
+            pi = globals()[performance_indicator_module].performance_indicator
 
             try:
-                performance_indicator.run(preprocessed_filenames_dict, self.testbed_conf, self.start_time)
+                pi(preprocessed_filenames_dict, self.testbed_conf, self.output_dir, self.start_time)
             except Exception as e:
-                print
                 rospy.logerr("Error in performance indicator: {pi_name}, Type: {ex_type}, Value: {ex_val}".format(pi_name=performance_indicator_module, ex_type=str(type(e)), ex_val=str(e)))
                 continue
