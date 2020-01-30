@@ -31,7 +31,8 @@ class Benchmark(object):
             rospy.logfatal('eurobench_rosbag_controller: start_recording service unavailable.')
             rospy.signal_shutdown('Rosbag controller unavailable')
 
-        self.start_recording_service = rospy.ServiceProxy('/eurobench_rosbag_controller/start_recording', StartRecording)
+        self.start_recording_service = rospy.ServiceProxy('/eurobench_rosbag_controller/start_recording',
+                                                          StartRecording)
         self.stop_recording_service = rospy.ServiceProxy('/eurobench_rosbag_controller/stop_recording', Trigger)
 
         self.preprocess = Preprocess(self.benchmark_group)
@@ -46,7 +47,6 @@ class Benchmark(object):
             self.testbed_device = 'trolley'
 
             self.performance_indicators = benchmark_scripts.performance.beast.__all__
-    
 
     def setup(self, robot_name, run_number, live_benchmark, testbed_conf):
         self.terminated = False
@@ -113,7 +113,7 @@ class Benchmark(object):
 
             if 'excluded_topics' in self.config:
                 request.excluded_topics += self.config['excluded_topics']
-            
+
             response = self.start_recording_service(request)
             if not response.success:
                 rospy.logerr('Could not start recording rosbag')
@@ -138,10 +138,10 @@ class Benchmark(object):
 
         # Calculate PIs - Run all pre-processing scripts
         for performance_indicator_module in self.performance_indicators:
-            performance_indicator = globals()[performance_indicator_module].PerformanceIndicator(self.output_dir)
+            pi = globals()[performance_indicator_module].performance_indicator
 
             try:
-                performance_indicator.run(preprocessed_filenames_dict, self.testbed_conf, self.start_time)
+                pi(preprocessed_filenames_dict, self.testbed_conf, self.output_dir, self.start_time)
             except Exception as e:
-                rospy.logerr('Error in performance indicator "' + performance_indicator_module + '": ' + str(e))
+                rospy.logerr("Error in performance indicator: {pi_name}, Type: {ex_type}, Value: {ex_val}".format(pi_name=performance_indicator_module, ex_type=str(type(e)), ex_val=str(e)))
                 continue

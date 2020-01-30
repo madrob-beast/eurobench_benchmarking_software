@@ -51,7 +51,7 @@ class Preprocess(object):
                 file_type, file_name = preprocess.finish()
                 self.preprocessed_files[file_type] = file_name
             except Exception as e:
-                rospy.logerr('Error in preprocess script "' + preprocess.data_type + '": ' + str(e))
+                rospy.logerr("Error in preprocess script: {script_name}, Type: {ex_type}, Value: {ex_val}".format(script_name=preprocess.data_type, ex_type=str(type(e)), ex_val=str(e)))
                 continue
 
         self.saving_data = False
