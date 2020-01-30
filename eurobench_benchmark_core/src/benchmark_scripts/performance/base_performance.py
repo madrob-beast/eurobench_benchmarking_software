@@ -2,6 +2,7 @@
 
 from exceptions import NotImplementedError
 
+
 class BasePerformance(object):
 
     def __init__(self, output_dir):
