@@ -48,16 +48,20 @@ class Benchmark(object):
             self.performance_indicators = benchmark_scripts.performance.beast.__all__
     
 
-    def setup(self, robot_name, run_number, rosbag_path, testbed_conf_path):
+    def setup(self, robot_name, run_number, live_benchmark, testbed_conf):
         self.terminated = False
         self.robot_name = robot_name
         self.run_number = run_number
-        self.rosbag_path = rosbag_path
-        self.testbed_conf_path = testbed_conf_path
+        self.live_benchmark = live_benchmark
+        self.testbed_conf = testbed_conf
         self.start_time = datetime.now() + timedelta(seconds=rospy.get_param('benchmark_countdown'))
         self.start_time_ros = rospy.Time.now() + rospy.Duration(rospy.get_param('benchmark_countdown'))
 
         self.result = {}
+
+        if not self.live_benchmark:
+            self.robot_name = self.testbed_conf['Robot name']
+            self.run_number = self.testbed_conf['Run number']
 
     def get_benchmark_info(self):
         benchmark_info = OrderedDict([
@@ -86,22 +90,21 @@ class Benchmark(object):
         rospy.loginfo(self.get_benchmark_info() + '\n')
 
     def execute(self):
-        if not self.rosbag_path:
+        if self.live_benchmark:
             # Setup testbed
             self.testbed_comm.setup_testbed()
 
-
-            # Save testbed config yaml file
+            # File name and path of rosbag
             start_time_str = self.start_time.strftime('%Y%m%d_%H%M%S')
-            self.testbed_conf_path = path.join(self.output_dir, 'subject_%s_%s_%03d_%s.yaml' % 
-                (self.robot_name, self.testbed_device, self.run_number, start_time_str))
-            self.testbed_comm.write_testbed_conf_file(self.testbed_conf_path, self.start_time_ros)
-
-
-            # Start recording rosbag
             rosbag_filepath = path.join(self.output_dir, 'subject_%s_%s_%03d_%s.bag' % 
                 (self.robot_name, self.benchmark_group, self.run_number, start_time_str))
-            
+
+            # Save testbed config yaml file, including rosbag filepath
+            self.testbed_conf_path = path.join(self.output_dir, 'subject_%s_%s_%03d_%s.yaml' % 
+                (self.robot_name, self.testbed_device, self.run_number, start_time_str))
+            self.testbed_conf = self.testbed_comm.write_testbed_conf_file(self.testbed_conf_path, self.start_time_ros, self.robot_name, self.run_number, rosbag_filepath)
+
+            # Start recording rosbag
             request = StartRecordingRequest()
             request.rosbag_filepath = rosbag_filepath
 
@@ -116,11 +119,9 @@ class Benchmark(object):
                 rospy.logerr('Could not start recording rosbag')
                 return
 
-        with open(self.testbed_conf_path, 'r') as testbed_conf_file:
-            self.testbed_conf = yaml.load(testbed_conf_file)
 
         # Start preprocessing scripts
-        self.preprocess.start(self.robot_name, self.run_number, self.start_time, self.testbed_conf, rosbag_path=self.rosbag_path)
+        self.preprocess.start(self.robot_name, self.run_number, self.start_time, self.testbed_conf, self.live_benchmark)
 
         # Loop while benchmark is running
         while not self.terminated:
@@ -129,8 +130,7 @@ class Benchmark(object):
         # Stop preprocessing
         preprocessed_filenames_dict = self.preprocess.finish()
 
-
-        if not self.rosbag_path:
+        if self.live_benchmark:
             # Stop recording
             response = self.stop_recording_service()
             if not response.success:

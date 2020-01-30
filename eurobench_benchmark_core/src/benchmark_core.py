@@ -39,20 +39,20 @@ class BenchmarkCore(object):
                 'Cannot start benchmark: a benchmark is currently running.')
             return StartBenchmarkResponse(False)
 
-        rospy.loginfo('\n---\n STARTING BENCHMARK: %s | Robot name: %s | Run %d\n---' %
-                      (self.benchmark_group, request.robot_name, request.run_number))
-
         benchmark = Benchmark(self.benchmark_group, self.config)
 
-        rosbag_path = None
-        testbed_conf_path = None
-        if request.use_rosbag:
-            rosbag_path = request.rosbag_path
+        testbed_conf = None
+        if not request.live_benchmark:
             testbed_conf_path = request.testbed_conf_path
+            with open(testbed_conf_path, 'r') as testbed_conf_file:
+                testbed_conf = yaml.load(testbed_conf_file)
 
-        benchmark.setup(request.robot_name, request.run_number, rosbag_path, testbed_conf_path)
+        benchmark.setup(request.robot_name, request.run_number, request.live_benchmark, testbed_conf)
         
         self.current_benchmark = benchmark
+
+        rospy.loginfo('\n---\n STARTING BENCHMARK: %s | Robot name: %s | Run %d\n---' %
+                      (self.benchmark_group, self.current_benchmark.robot_name, self.current_benchmark.run_number))
 
         # Execute benchmark in a new thread
         threading.Thread(target=self.execute_benchmark).start()

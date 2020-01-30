@@ -76,10 +76,13 @@ class MadrobTestbedComm(BaseTestbedComm):
             else:
                 rospy.logerr('Error setting CCW door LUT: %s' % (ccw_door_lut_response.message))
 
-    def write_testbed_conf_file(self, filepath, start_time_ros):
+    def write_testbed_conf_file(self, filepath, start_time_ros, robot_name, run_number, rosbag_filepath):
         testbed_params = {}
 
         testbed_params['Start time'] = '%d.%d' % (start_time_ros.secs, start_time_ros.nsecs)
+        testbed_params['Robot name'] = robot_name
+        testbed_params['Run number'] = run_number
+        testbed_params['Rosbag path'] = rosbag_filepath
         testbed_params['Benchmark type'] = self.current_benchmark_name
         testbed_params['Door controller mode'] = SetDoorControllerModeRequest.MODE_LUT if self.current_benchmark_type['brake_enabled'] else SetDoorControllerModeRequest.MODE_DISABLED
         testbed_params['LUTcw'] = self.current_benchmark_type['lut']
@@ -89,3 +92,5 @@ class MadrobTestbedComm(BaseTestbedComm):
 
         with open(filepath, 'w') as file:
             yaml.dump(testbed_params, file, default_flow_style=False)
+
+        return testbed_params

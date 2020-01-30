@@ -28,11 +28,12 @@ class Preprocess(object):
         self.running_preprocess_scripts = []
         self.preprocessed_files = {}
 
-    def start(self, robot_name, run_number, start_time, testbed_conf, rosbag_path=None):
-
-        if rosbag_path:
+    def start(self, robot_name, run_number, start_time, testbed_conf, live_benchmark):
+        if not live_benchmark:
             # Play rosbag
             play_rosbag_service = rospy.ServiceProxy('/eurobench_rosbag_controller/play_rosbag', PlayRosbag)
+
+            rosbag_path = testbed_conf['Rosbag path']
             play_rosbag_service(rosbag_path)
             self.playing_rosbag  = True
             
@@ -46,8 +47,12 @@ class Preprocess(object):
     
     def finish(self):
         for preprocess in self.running_preprocess_scripts:
-           file_type, file_name = preprocess.finish()
-           self.preprocessed_files[file_type] = file_name
+            try:
+                file_type, file_name = preprocess.finish()
+                self.preprocessed_files[file_type] = file_name
+            except Exception as e:
+                rospy.logerr('Error in preprocess script "' + preprocess.data_type + '": ' + str(e))
+                continue
 
         self.saving_data = False
 

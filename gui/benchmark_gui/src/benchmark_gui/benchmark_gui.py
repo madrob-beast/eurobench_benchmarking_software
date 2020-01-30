@@ -75,10 +75,6 @@ class BenchmarkGui(Plugin):
         self.restart_core_and_rosbag_button = self._widget.findChild(QPushButton, 'restart_core_and_rosbag_button')
         self.restart_core_and_rosbag_button.clicked.connect(self.shutdown_core_and_rosbag_controller)
 
-        self.rosbag_path_edit = self._widget.findChild(QLineEdit, 'rosbag_path_edit')
-        self.rosbag_path_browse = self._widget.findChild(QPushButton, 'rosbag_path_browse')
-        self.rosbag_path_browse.clicked.connect(self.on_rosbag_path_browse_click)
-
         self.testbed_yaml_edit = self._widget.findChild(QLineEdit, 'testbed_yaml_edit')
         self.testbed_yaml_browse = self._widget.findChild(QPushButton, 'testbed_yaml_browse')
         self.testbed_yaml_browse.clicked.connect(self.on_testbed_yaml_browse_click)
@@ -129,31 +125,23 @@ class BenchmarkGui(Plugin):
         start_benchmark = rospy.ServiceProxy('bmcore/start_benchmark', StartBenchmark)
 
         start_request = StartBenchmarkRequest()
+        start_request.live_benchmark = True
         start_request.robot_name = robot_name
         start_request.run_number = run_number
-        start_request.use_rosbag = False
 
         start_benchmark(start_request)
 
     def on_rosbagbutton_click(self):
-        rosbag_path = self.rosbag_path_edit.text()
         testbed_conf_path = self.testbed_yaml_edit.text()
 
-        if (not rosbag_path) or (not testbed_conf_path):
-            rospy.logerr('Error: Missing rosbag or yaml path.')
+        if not testbed_conf_path:
+            rospy.logerr('Error: Missing yaml path.')
             return
-
-        robot_name = self.robot_combo.currentText()
-
-        run_number = self.run_spinbox.value()
 
         start_benchmark = rospy.ServiceProxy('bmcore/start_benchmark', StartBenchmark)
 
         start_request = StartBenchmarkRequest()
-        start_request.robot_name = robot_name
-        start_request.run_number = run_number
-        start_request.use_rosbag = True
-        start_request.rosbag_path = rosbag_path
+        start_request.live_benchmark = False
         start_request.testbed_conf_path = testbed_conf_path
 
         start_benchmark(start_request)
@@ -234,6 +222,8 @@ class BenchmarkGui(Plugin):
                 self.set_benchmark_info_signal.emit(state.last_benchmark_info)
                 self.results_detail_label.setPalette(self.greenPalette)
                 self.results_detail_label.setText('(benchmark finished)')
+            else:
+                self.results_detail_label.setText('')
 
     def timer_slot(self, seconds_passed, benchmark_running):
         if not benchmark_running:

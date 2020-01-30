@@ -310,9 +310,9 @@
    <widget class="QPushButton" name="start_from_bag_button">
     <property name="geometry">
      <rect>
-      <x>53</x>
-      <y>120</y>
-      <width>126</width>
+      <x>41</x>
+      <y>100</y>
+      <width>149</width>
       <height>41</height>
      </rect>
     </property>
@@ -322,76 +322,41 @@
      </font>
     </property>
     <property name="text">
-     <string>Start from bag</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="rosbag_path_browse">
-    <property name="geometry">
-     <rect>
-      <x>160</x>
-      <y>21</y>
-      <width>61</width>
-      <height>27</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Browse</string>
+     <string>Start
+offline benchmark</string>
     </property>
    </widget>
    <widget class="QPushButton" name="testbed_yaml_browse">
     <property name="geometry">
      <rect>
-      <x>160</x>
-      <y>79</y>
+      <x>158</x>
+      <y>26</y>
       <width>61</width>
       <height>27</height>
      </rect>
     </property>
     <property name="text">
      <string>Browse</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_3">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>5</y>
-      <width>101</width>
-      <height>18</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Rosbag file</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_4">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>63</y>
+      <y>8</y>
       <width>171</width>
       <height>19</height>
      </rect>
     </property>
     <property name="text">
-     <string>Testbed config yaml file</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="rosbag_path_edit">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>23</y>
-      <width>131</width>
-      <height>24</height>
-     </rect>
+     <string>Benchmark config file</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="testbed_yaml_edit">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>82</y>
+      <y>29</y>
       <width>131</width>
       <height>24</height>
      </rect>
@@ -416,12 +381,12 @@
     <rect>
      <x>300</x>
      <y>206</y>
-     <width>101</width>
+     <width>121</width>
      <height>17</height>
     </rect>
    </property>
    <property name="text">
-    <string>Rosbag</string>
+    <string>Offline Benchmark</string>
    </property>
   </widget>
   <widget class="QFrame" name="frame_3">
