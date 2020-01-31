@@ -91,12 +91,11 @@ class BenchmarkGui(Plugin):
         self.stop_button = self._widget.findChild(QPushButton, 'stop_button')
         self.stop_button.clicked.connect(self.on_stopbutton_click)
 
-        # Get robot names from BMS to fill the combo box
-        get_robot_names = rospy.ServiceProxy('bmcore/robot_names', BenchmarkCoreRobotNames)
-        robot_names = get_robot_names()
-
         self.robot_combo = self._widget.findChild(QComboBox, 'robot_combo')
-        self.robot_combo.addItems([''] + robot_names.robot_names)
+
+        # Get robot names from BMS to fill the combo box
+        self.robot_names_set = False
+        rospy.Timer(rospy.Duration(1), self.check_robot_names)
 
         # Combobox listeners
         self.robot_combo.currentTextChanged.connect(self.on_combobox_change)
@@ -114,6 +113,16 @@ class BenchmarkGui(Plugin):
 
         context.add_widget(self._widget)
 
+    def check_robot_names(self, _):
+        if not self.robot_names_set:
+            try:
+                get_robot_names = rospy.ServiceProxy('bmcore/robot_names', BenchmarkCoreRobotNames)
+                robot_names = get_robot_names()
+                self.robot_combo.addItems([''] + robot_names.robot_names)
+                self.robot_names_set = True
+            except rospy.ServiceException:
+                pass # Core not available yet
+
     def on_combobox_change(self, value):
         self.robot_name_label.setText(self.robot_combo.currentText())
 
@@ -122,14 +131,17 @@ class BenchmarkGui(Plugin):
 
         run_number = self.run_spinbox.value()
 
-        start_benchmark = rospy.ServiceProxy('bmcore/start_benchmark', StartBenchmark)
+        try:
+            start_benchmark = rospy.ServiceProxy('bmcore/start_benchmark', StartBenchmark)
 
-        start_request = StartBenchmarkRequest()
-        start_request.live_benchmark = True
-        start_request.robot_name = robot_name
-        start_request.run_number = run_number
+            start_request = StartBenchmarkRequest()
+            start_request.live_benchmark = True
+            start_request.robot_name = robot_name
+            start_request.run_number = run_number
 
-        start_benchmark(start_request)
+            start_benchmark(start_request)
+        except rospy.ServiceException as e:
+            rospy.logerr("bmcore/start_benchmark couldn't be called: {ex_val}".format(ex_val=str(e)))
 
     def on_rosbagbutton_click(self):
         testbed_conf_path = self.testbed_yaml_edit.text()
@@ -138,13 +150,16 @@ class BenchmarkGui(Plugin):
             rospy.logerr('Error: Missing yaml path.')
             return
 
-        start_benchmark = rospy.ServiceProxy('bmcore/start_benchmark', StartBenchmark)
+        try:
+            start_benchmark = rospy.ServiceProxy('bmcore/start_benchmark', StartBenchmark)
 
-        start_request = StartBenchmarkRequest()
-        start_request.live_benchmark = False
-        start_request.testbed_conf_path = testbed_conf_path
+            start_request = StartBenchmarkRequest()
+            start_request.live_benchmark = False
+            start_request.testbed_conf_path = testbed_conf_path
 
-        start_benchmark(start_request)
+            start_benchmark(start_request)
+        except rospy.ServiceException as e:
+            rospy.logerr("bmcore/start_benchmark couldn't be called: {ex_val}".format(ex_val=str(e)))
 
     def on_rosbag_path_browse_click(self):
          # Show file dialog to choose rosbag
@@ -169,8 +184,11 @@ class BenchmarkGui(Plugin):
         self.testbed_yaml_edit.setText(yaml_filepath)
 
     def on_stopbutton_click(self):
-        stop_benchmark = rospy.ServiceProxy('bmcore/stop_benchmark', StopBenchmark)
-        stop_benchmark()
+        try:
+            stop_benchmark = rospy.ServiceProxy('bmcore/stop_benchmark', StopBenchmark)
+            stop_benchmark()
+        except rospy.ServiceException as e:
+            rospy.logerr("bmcore/stop_benchmark couldn't be called: {ex_val}".format(ex_val=str(e)))
 
     def state_callback(self, state):
         self.core_status = state.status
@@ -319,11 +337,19 @@ class BenchmarkGui(Plugin):
             self.testbed_status_label.setPalette(self.redPalette)
 
     def shutdown_core_and_rosbag_controller(self):
-        shutdown_core = rospy.ServiceProxy('bmcore/shutdown', Empty)
-        shutdown_core()
+        if self.benchmark_core_available:
+            try:
+                shutdown_core = rospy.ServiceProxy('bmcore/shutdown', Empty)
+                shutdown_core()
+            except rospy.ServiceException:
+                rospy.logerr('bmcore/shutdown service not available')
 
-        shutdown_rosbag_controller = rospy.ServiceProxy('/eurobench_rosbag_controller/shutdown', Empty)
-        shutdown_rosbag_controller()
+        if self.rosbag_controller_available:
+            try:
+                shutdown_rosbag_controller = rospy.ServiceProxy('/eurobench_rosbag_controller/shutdown', Empty)
+                shutdown_rosbag_controller()
+            except rospy.ServiceException:
+                rospy.logerr('/eurobench_rosbag_controller/shutdown service not available')
 
     def get_cached_dir(self, dir_type):
         output_dir = path.expanduser(rospy.get_param('benchmark_output_directory'))

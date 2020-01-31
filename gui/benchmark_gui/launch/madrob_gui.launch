@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <launch>
-  <rosparam>
-    benchmark_group: MADROB
-  </rosparam>
+  <rosparam file="$(find eurobench_benchmark_core)/config/benchmark_config/MADROB.yaml" command="load" subst_value="true" />
 
   <node pkg="rqt_gui" type="rqt_gui" name="benchmark_gui" args="--clear-config --perspective-file $(find benchmark_gui)/perspectives/MADROB.perspective -l -f" output="screen" required="true">
   </node>

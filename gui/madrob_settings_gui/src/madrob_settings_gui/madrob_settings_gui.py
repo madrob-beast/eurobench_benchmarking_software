@@ -58,16 +58,26 @@ class madrob_settings_gui(Plugin):
         self.calib_encoder_ccw_button = self._widget.findChild(QPushButton, 'calib_encoder_ccw')
         self.calib_encoder_ccw_button.clicked.connect(self.calibrate_encoder_ccw)
 
-        get_madrob_settings = rospy.ServiceProxy('madrob/settings', MadrobSettings)
-        madrob_settings = get_madrob_settings()
-
-        self.benchmark_type_combo.addItems(madrob_settings.benchmark_types)
         self.door_opening_side_combo.addItems(['CW', 'CCW'])
         self.robot_approach_side_combo.addItems(['CW', 'CCW'])
+
+        # Every second, check for MADROB's settings from the core
+        self.benchmark_types_set = False
+        rospy.Timer(rospy.Duration(1), self.check_madrob_settings)
 
         context.add_widget(self._widget)
 
         self.run_rospy_node()
+
+    def check_madrob_settings(self, _):
+        if not self.benchmark_types_set:
+            try:
+                get_madrob_settings = rospy.ServiceProxy('madrob/settings', MadrobSettings)
+                madrob_settings = get_madrob_settings()
+                self.benchmark_type_combo.addItems(madrob_settings.benchmark_types)
+                self.benchmark_types_set = True
+            except rospy.ServiceException:
+                pass # Core not available yet
 
     def shutdown_plugin(self):
         # TODO unregister all publishers here
@@ -99,7 +109,14 @@ class madrob_settings_gui(Plugin):
             rospy.logerr('Error parsing integer for "weight": no calibration done.')
             return
 
-        calibrate_handle = rospy.ServiceProxy('/' + self.handle_node_name + '/calibrate', CalibrateHandle)
+        calibrate_handle_service_name = '/' + self.handle_node_name + '/calibrate'
+        try:
+            rospy.wait_for_service(calibrate_handle_service_name, timeout=1)
+        except rospy.ROSException:
+            rospy.logerr('{service_name} unavailable'.format(service_name=calibrate_handle_service_name))
+            return
+
+        calibrate_handle = rospy.ServiceProxy(calibrate_handle_service_name, CalibrateHandle)
 
         calibrate_handle_req = CalibrateHandleRequest()
         calibrate_handle_req.samples = 160
@@ -119,7 +136,14 @@ class madrob_settings_gui(Plugin):
             rospy.logerr('Error parsing integer for "weight": no calibration done.')
             return
 
-        calibrate_handle = rospy.ServiceProxy('/' + self.handle_node_name + '/calibrate', CalibrateHandle)
+        calibrate_handle_service_name = '/' + self.handle_node_name + '/calibrate'
+        try:
+            rospy.wait_for_service(calibrate_handle_service_name, timeout=1)
+        except rospy.ROSException:
+            rospy.logerr('{service_name} unavailable'.format(service_name=calibrate_handle_service_name))
+            return
+
+        calibrate_handle = rospy.ServiceProxy(calibrate_handle_service_name, CalibrateHandle)
 
         calibrate_handle_req = CalibrateHandleRequest()
         calibrate_handle_req.samples = 160
@@ -146,7 +170,14 @@ class madrob_settings_gui(Plugin):
         self.calibrate_encoder(CalibrateDoorPositionRequest.POSITION_CCW)
 
     def calibrate_encoder(self, position):
-        calibrate_position = rospy.ServiceProxy('/' + self.door_node_name + '/calibrate_position', CalibrateDoorPosition)
+        calibrate_position_service_name = '/' + self.door_node_name + '/calibrate_position'
+        try:
+            rospy.wait_for_service(calibrate_position_service_name, timeout=1)
+        except rospy.ROSException:
+            rospy.logerr('{service_name} unavailable'.format(service_name=calibrate_position_service_name))
+            return
+
+        calibrate_position = rospy.ServiceProxy(calibrate_position_service_name, CalibrateDoorPosition)
 
         calibrate_position_req = CalibrateDoorPositionRequest()
         calibrate_position_req.position = position
@@ -156,6 +187,7 @@ class madrob_settings_gui(Plugin):
             rospy.loginfo('Door encoder calibrated. Position: %d' % (position))
         else:
             rospy.logerr('Could not calibrate door encoder. Position: %d' % (position))
+            
 
     def run_rospy_node(self):
         self.benchmark_params_service = rospy.Service(

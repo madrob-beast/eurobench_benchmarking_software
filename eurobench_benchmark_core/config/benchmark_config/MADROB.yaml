@@ -1,3 +1,5 @@
+benchmark_group: MADROB
+
 door_node_name: madrob/door
 handle_node_name: madrob/handle
 passage_node_name: madrob/passage
