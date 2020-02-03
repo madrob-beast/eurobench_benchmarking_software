@@ -1,3 +1,4 @@
 string rosbag_filepath
+string[] topic_remappings
 ---
 bool success

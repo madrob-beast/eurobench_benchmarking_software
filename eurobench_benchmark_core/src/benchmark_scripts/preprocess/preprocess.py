@@ -30,11 +30,28 @@ class Preprocess(object):
 
     def start(self, robot_name, run_number, start_time, testbed_conf, live_benchmark):
         if not live_benchmark:
+            # Not live, rosbag needs to be played.
+            topic_remappings = []
+
+            if self.benchmark_group == 'MADROB':
+                # Remap topic names, which will add a '_bag' suffix
+                topic_remappings += [rospy.get_param('door_node_name'), rospy.get_param('handle_node_name'), rospy.get_param('passage_node_name')]
+                
+                # Temporarily change node names to the ones from the bag, so that live ones are ignored
+                rospy.set_param('door_node_name', rospy.get_param('door_node_name') + '_bag')
+                rospy.set_param('handle_node_name', rospy.get_param('handle_node_name') + '_bag')
+                rospy.set_param('passage_node_name', rospy.get_param('passage_node_name') + '_bag')
+
             # Play rosbag
             play_rosbag_service = rospy.ServiceProxy('/eurobench_rosbag_controller/play_rosbag', PlayRosbag)
 
             rosbag_path = testbed_conf['Rosbag path']
-            play_rosbag_service(rosbag_path)
+
+            play_rosbag_request = PlayRosbagRequest()
+            play_rosbag_request.rosbag_filepath = rosbag_path
+            play_rosbag_request.topic_remappings = topic_remappings
+
+            play_rosbag_service(play_rosbag_request)
             self.playing_rosbag  = True
             
         for preprocess_module in self.preprocess_scripts:
@@ -59,6 +76,11 @@ class Preprocess(object):
         self.running_preprocess_scripts = []
 
         if self.playing_rosbag:
+            # Remove '_bag' from node names
+            rospy.set_param('door_node_name', rospy.get_param('door_node_name').replace('_bag', ''))
+            rospy.set_param('handle_node_name', rospy.get_param('handle_node_name').replace('_bag', ''))
+            rospy.set_param('passage_node_name', rospy.get_param('passage_node_name').replace('_bag', ''))
+
             stop_rosbag_service = rospy.ServiceProxy('/eurobench_rosbag_controller/stop_rosbag', Trigger)
             stop_rosbag_service()
             self.playing_rosbag  = False

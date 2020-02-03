@@ -2,6 +2,7 @@
 
 import rospy
 import rosnode
+import rosbag
 from std_srvs.srv import Trigger, TriggerResponse, Empty, EmptyResponse
 from eurobench_bms_msgs_and_srvs.srv import StartRecording, StartRecordingResponse, PlayRosbag, PlayRosbagResponse, StopBenchmark
 
@@ -38,7 +39,7 @@ class RosbagController():
             rospy.logerr('Already Recording')
             return StartRecordingResponse(False)
 
-        command = ['rosrun', 'rosbag', 'record', '-a', '-x'] + ['|'.join(req.excluded_topics)] + ['-O'] + [req.rosbag_filepath] + ['__name:=eurobench_rosbag_recorder_node']
+        command = ['rosrun', 'rosbag', 'record', '-a', '-x'] + ['|'.join(req.excluded_topics)] + ['-O', req.rosbag_filepath, '__name:=eurobench_rosbag_recorder_node']
 
         self.recording_process = subprocess.Popen(command)
         self.recording = True
@@ -63,7 +64,23 @@ class RosbagController():
             rospy.logerr('Already Playing')
             return PlayRosbagResponse(False)
 
-        command = ['rosrun', 'rosbag', 'play'] + [req.rosbag_filepath] + ['__name:=eurobench_rosbag_player_node']
+        rosbag_filepath = req.rosbag_filepath
+        topic_remappings = req.topic_remappings
+
+        bag = rosbag.Bag(rosbag_filepath)
+        topics = bag.get_type_and_topic_info()[1].keys()
+
+        remaps = []
+
+        for topic in topics:
+            for remapping in topic_remappings:
+                if remapping in topic:
+                    remaps.append(topic + ':=' + topic.replace(remapping, remapping+'_bag'))
+
+        if remaps:
+            command = ['rosrun', 'rosbag', 'play', req.rosbag_filepath] + remaps + ['__name:=eurobench_rosbag_player_node']
+        else:
+            command = ['rosrun', 'rosbag', 'play', req.rosbag_filepath] + ['__name:=eurobench_rosbag_player_node']
 
         self.playing_process = subprocess.Popen(command, stdout=subprocess.PIPE)
         self.playing = True
