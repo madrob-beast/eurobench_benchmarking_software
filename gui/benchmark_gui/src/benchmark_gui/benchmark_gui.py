@@ -3,6 +3,7 @@
 from os import path, makedirs
 import sys
 import signal
+import yaml
 import rospy
 
 from qt_gui.plugin import Plugin
@@ -151,26 +152,18 @@ class BenchmarkGui(Plugin):
             return
 
         try:
+            with open(testbed_conf_path, 'r') as testbed_conf_file:
+                testbed_conf = yaml.load(testbed_conf_file)
+
             start_benchmark = rospy.ServiceProxy('bmcore/start_benchmark', StartBenchmark)
 
             start_request = StartBenchmarkRequest()
             start_request.live_benchmark = False
-            start_request.testbed_conf_path = testbed_conf_path
+            start_request.testbed_conf = yaml.dump(testbed_conf)
 
             start_benchmark(start_request)
         except rospy.ServiceException as e:
             rospy.logerr("bmcore/start_benchmark couldn't be called: {ex_val}".format(ex_val=str(e)))
-
-    def on_rosbag_path_browse_click(self):
-         # Show file dialog to choose rosbag
-        rosbag_dir = self.get_cached_dir('rosbag_dir') # Read cached rosbag directory
-        rosbag_filepath, _ = QFileDialog.getOpenFileName(self._widget, 'Open rosbag file', rosbag_dir, 'Rosbag Files (*.bag)')
-        if not rosbag_filepath:
-            return
-
-        self.set_cached_dir('rosbag_dir', path.dirname(rosbag_filepath)) # Cache rosbag directory for next time
-
-        self.rosbag_path_edit.setText(rosbag_filepath)
 
     def on_testbed_yaml_browse_click(self):
         # Show file dialog to choose testbed configuration yaml

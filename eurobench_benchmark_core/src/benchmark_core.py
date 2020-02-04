@@ -43,9 +43,7 @@ class BenchmarkCore(object):
 
         testbed_conf = None
         if not request.live_benchmark:
-            testbed_conf_path = request.testbed_conf_path
-            with open(testbed_conf_path, 'r') as testbed_conf_file:
-                testbed_conf = yaml.load(testbed_conf_file)
+            testbed_conf = yaml.load(request.testbed_conf)
 
         benchmark.setup(request.robot_name, request.run_number, request.live_benchmark, testbed_conf)
         
