@@ -9,6 +9,7 @@ Install the ROS package as usual:
 ```
 cd catkin_workspace/src
 git clone https://github.com/madrob-beast/eurobench_benchmarking_software.git
+pip install -r eurobench_benchmarking_software/requirements.txt
 cd ../
 catkin_make
 ```
