@@ -87,7 +87,7 @@ class PreprocessObject(BasePreprocess):
                                                                            start_time, self.data_type)
 
         # start_time event
-        start_time_split = testbed_conf['Start time'].split('.')
+        start_time_split = str(testbed_conf['Start time']).split('.')
         start_time_ros = rospy.Time(int(start_time_split[0]), int(start_time_split[1]))
         self.events.append((start_time_ros, 'benchmark_start'))
 
