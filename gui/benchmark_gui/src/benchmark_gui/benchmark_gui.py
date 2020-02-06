@@ -345,18 +345,19 @@ class BenchmarkGui(Plugin):
                 rospy.logerr('/eurobench_rosbag_controller/shutdown service not available')
 
     def get_cached_dir(self, dir_type):
-        output_dir = path.expanduser(rospy.get_param('benchmark_output_directory'))
-        if path.exists(path.join(output_dir, 'app_config', dir_type)):
-            with open(path.join(output_dir, 'app_config', dir_type)) as file:
+        config_dir = path.expanduser('~/.config/eurobench/madrob_beast')
+
+        if path.exists(path.join(config_dir, dir_type)):
+            with open(path.join(config_dir, dir_type)) as file:
                 return path.expanduser(file.read().strip())
         else:
             return '/home/'
 
     def set_cached_dir(self, dir_type, dir_path):
-        output_dir = path.expanduser(rospy.get_param('benchmark_output_directory'))
-        app_config = path.join(output_dir, 'app_config')
-        if not path.exists(app_config):
-            makedirs(app_config)
+        config_dir = path.expanduser('~/.config/eurobench/madrob_beast')
 
-        with open(path.join(app_config, dir_type), 'w+') as file:
+        if not path.exists(config_dir):
+            makedirs(config_dir)
+
+        with open(path.join(config_dir, dir_type), 'w+') as file:
             file.write(dir_path)
