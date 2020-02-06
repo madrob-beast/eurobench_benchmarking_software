@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<launch>
+  <node pkg="rqt_gui" type="rqt_gui" name="madrob_sensors_gui" args="--clear-config --perspective-file $(find benchmark_gui)/perspectives/MADROB_sensors.perspective -l -f" output="screen" required="true">
+  </node>
+</launch>

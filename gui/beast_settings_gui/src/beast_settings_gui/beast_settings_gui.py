@@ -47,12 +47,6 @@ class beast_settings_gui(Plugin):
         # v = instance_settings.value(k)
         pass
 
-    # def trigger_configuration(self):
-        # Comment in to signal that the plugin has a way to configure
-        # This will enable a setting button (gear icon) in each dock widget
-        # title bar
-        # Usually used to open a modal configuration dialog
-
     def update_wheel_stiffness(self, value):
         self.wheel_stiffness_value_label.setText(str(value) + ' N')
 
