@@ -16,7 +16,6 @@ import numpy as np
 
 class PreprocessObject(BasePreprocess):
     def __init__(self, data_type):
-        # super(PreprocessObject, self).__init__(data_type)
         self.data_type = data_type
 
         # Passage sensors values (a subset of the total number of sensors available from the testbed)
@@ -32,8 +31,8 @@ class PreprocessObject(BasePreprocess):
         self.handle_force = 0.0
 
         # Passage is detected by checking when the height of the passage sensors becomes higher than a threshold
-        # The first occurrence of a raising through the threshold is indicates the humanoid has approached the door
-        # The last occurrence of a falling through the threshold indicates the humanoid has left the door
+        # The first occurrence of the height raising through the threshold indicates the humanoid has approached the door
+        # The last occurrence of the height falling through the threshold indicates the humanoid has left the door
         self.first_rising_edge_side = None
         self.first_rising_edge_time = None
         self.last_falling_edge_side = None
@@ -81,7 +80,7 @@ class PreprocessObject(BasePreprocess):
         self.events_sequence_file = None
 
         # Enable visualisation of passage sensors and door closing/opening events in the terminal
-        self.print_debug_info = True
+        self.print_debug_info = False
 
     def start(self, benchmark_group, robot_name, run_number, start_time, testbed_conf):
         self.events_sequence_file = preprocess_utils.open_preprocessed_csv(benchmark_group, robot_name, run_number,
