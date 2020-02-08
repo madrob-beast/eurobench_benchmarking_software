@@ -16,6 +16,7 @@ import numpy as np
 
 class PreprocessObject(BasePreprocess):
     def __init__(self, data_type):
+        # super(PreprocessObject, self).__init__(data_type)
         self.data_type = data_type
 
         # Passage sensors values (a subset of the total number of sensors available from the testbed)
@@ -46,7 +47,7 @@ class PreprocessObject(BasePreprocess):
 
         # When the door is ajar (almost close) the passage sensors would detect the door.
         # To avoid this, the sensors are ignored when the door is between the closed angle and this angle (rad).
-        self.ajar_door_angle_th = 0.4
+        self.ajar_door_angle_th = 0.5
 
         # The door is considered closed when it's absolute angle is less than this threshold (rad).
         self.closed_door_angle_th = 0.03
@@ -60,7 +61,7 @@ class PreprocessObject(BasePreprocess):
         self.handle_force_offset = 750
 
         # The door is being pushed / pulled when the absolute force signal is greater than this threshold
-        self.handle_force_th = 200 # TODO need more sensor data
+        self.handle_force_th = 200  # TODO need more sensor data
 
         # We only need the first handle_is_touched event, so when it happens, this flag is set
         self.handle_has_been_touched = False
@@ -80,7 +81,7 @@ class PreprocessObject(BasePreprocess):
         self.events_sequence_file = None
 
         # Enable visualisation of passage sensors and door closing/opening events in the terminal
-        self.print_debug_info = False
+        self.print_debug_info = True
 
     def start(self, benchmark_group, robot_name, run_number, start_time, testbed_conf):
         self.events_sequence_file = preprocess_utils.open_preprocessed_csv(benchmark_group, robot_name, run_number,
@@ -99,7 +100,7 @@ class PreprocessObject(BasePreprocess):
 
         # Publishers
         self.cw_pub = [rospy.Publisher('/' + output_passage_topic_name + '/cw%i' % i, Float64, queue_size=1) for i in range(self.cw_num_sensors)]
-        self.ccw_pub = [rospy.Publisher('ccw%i' % i, Float64, queue_size=1) for i in range(self.ccw_num_sensors)]
+        self.ccw_pub = [rospy.Publisher('/' + output_passage_topic_name + '/ccw%i' % i, Float64, queue_size=1) for i in range(self.ccw_num_sensors)]
 
         # Subscribers (instantiated last to avoid registering the callbacks before the attributes of self are completely instantiated)
         self.door_sub = rospy.Subscriber('/' + door_node_name + '/state', Door, self.door_state_callback)
@@ -141,9 +142,14 @@ class PreprocessObject(BasePreprocess):
         # sort by time (first element of the tuple)
         self.events.sort(key=lambda time_event: time_event[0])
 
+        if len(self.events) > 0:
+            first_event_time, _ = self.events[0]
+        else:
+            first_event_time = None
+
         for time, event in self.events:
             if self.print_debug_info:
-                print time, '\t', event
+                print "{t:1.3f}\t{e}".format(t=(time - first_event_time).to_sec(), e=event)
             self.events_sequence_file.write('%d.%d, %s\n' % (time.secs, time.nsecs, event))
 
         self.events_sequence_file.close()
@@ -193,25 +199,25 @@ class PreprocessObject(BasePreprocess):
 
         new_cw = np.zeros(self.cw_num_sensors)
         cw_stamps = np.full(fill_value=None, dtype=rospy.Time, shape=(self.cw_num_sensors,))
+        cw_stamps[0:4] = cw_right.header.stamp
+        cw_stamps[4] = cw_left.header.stamp
         if not door_ajar_cw:
             new_cw[0] = self.door_height - cw_right.ranges[3].range
             new_cw[1] = self.door_height - cw_right.ranges[2].range
             new_cw[2] = self.door_height - cw_right.ranges[1].range
             new_cw[3] = self.door_height - cw_right.ranges[0].range
             new_cw[4] = self.door_height - cw_left.ranges[3].range
-            cw_stamps[0:4] = cw_right.header.stamp
-            cw_stamps[4] = cw_left.header.stamp
 
         new_ccw = np.zeros(self.ccw_num_sensors)
         ccw_stamps = np.full(fill_value=None, dtype=rospy.Time, shape=(self.ccw_num_sensors,))
+        ccw_stamps[0:4] = ccw_left.header.stamp
+        ccw_stamps[4] = ccw_right.header.stamp
         if not door_ajar_ccw:
             new_ccw[0] = self.door_height - ccw_left.ranges[3].range
             new_ccw[1] = self.door_height - ccw_left.ranges[2].range
             new_ccw[2] = self.door_height - ccw_left.ranges[1].range
-            new_ccw[3] = 0.0  # new_ccw[3] = self.door_height - ccw_left.ranges[0].range  # broken sensor
-            new_ccw[4] = self.door_height - ccw_right.ranges[3].range
-            ccw_stamps[0:4] = ccw_left.header.stamp
-            ccw_stamps[4] = ccw_right.header.stamp
+            new_ccw[3] = self.door_height - ccw_left.ranges[0].range
+            new_ccw[4] = self.door_height - ccw_right.ranges[0].range
 
         for i in range(self.cw_num_sensors):
             # rising edge on sensor cw i
@@ -221,8 +227,11 @@ class PreprocessObject(BasePreprocess):
                                                                                 cw_pre_tabs='\t' * i,
                                                                                 cw_post_tabs='\t' * (self.cw_num_sensors - i - 1))
                 if self.first_rising_edge_side is None:
-                    self.first_rising_edge_side = 'cw'
-                    self.first_rising_edge_time = cw_stamps[i]
+                    if cw_stamps[i] is not None:
+                        self.first_rising_edge_side = 'cw'
+                        self.first_rising_edge_time = cw_stamps[i]
+                    else:
+                        rospy.logwarn("[events_sequence preprocess data script] cw_stamps contains Nones")
 
             # falling edge on sensor cw i
             if self.cw[i] > self.th > new_cw[i]:
@@ -230,8 +239,12 @@ class PreprocessObject(BasePreprocess):
                     print "{angle:.3f}\t{cw_pre_tabs}↓{cw_post_tabs}\t|".format(angle=self.door_angle,
                                                                                 cw_pre_tabs='\t' * i,
                                                                                 cw_post_tabs='\t' * (self.cw_num_sensors-i-1))
-                self.last_falling_edge_side = 'cw'
-                self.last_falling_edge_time = cw_stamps[i]
+
+                if cw_stamps[i] is not None:
+                    self.last_falling_edge_side = 'cw'
+                    self.last_falling_edge_time = cw_stamps[i]
+                else:
+                    rospy.logwarn("[events_sequence preprocess data script] cw_stamps contains Nones")
 
         for i in range(self.ccw_num_sensors):
             # rising edge on sensor ccw i
@@ -241,8 +254,11 @@ class PreprocessObject(BasePreprocess):
                                                                       cw_tabs='\t' * self.cw_num_sensors,
                                                                       ccw_tabs='\t' * (i + 1))
                 if self.first_rising_edge_side is None:
-                    self.first_rising_edge_side = 'ccw'
-                    self.first_rising_edge_time = ccw_stamps[i]
+                    if ccw_stamps[i] is not None:
+                        self.first_rising_edge_side = 'ccw'
+                        self.first_rising_edge_time = ccw_stamps[i]
+                    else:
+                        rospy.logwarn("[events_sequence preprocess data script] ccw_stamps contains Nones")
 
             # falling edge on sensor ccw i
             if self.ccw[i] > self.th > new_ccw[i]:
@@ -250,8 +266,11 @@ class PreprocessObject(BasePreprocess):
                     print "{angle:.3f}\t{cw_tabs}|{ccw_tabs}↓".format(angle=self.door_angle,
                                                                       cw_tabs='\t'*self.cw_num_sensors,
                                                                       ccw_tabs='\t' * (i + 1))
-                self.last_falling_edge_side = 'ccw'
-                self.last_falling_edge_time = ccw_stamps[i]
+                if ccw_stamps[i] is not None:
+                    self.last_falling_edge_side = 'ccw'
+                    self.last_falling_edge_time = ccw_stamps[i]
+                else:
+                    rospy.logwarn("[events_sequence preprocess data script] ccw_stamps contains Nones")
 
         for i in range(self.cw_num_sensors):
             self.cw[i] = new_cw[i]
