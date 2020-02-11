@@ -28,11 +28,12 @@ class PreprocessObject(BasePreprocess):
         self.start_time = None
         self.print_debug_info = False
 
-    def start(self, benchmark_group, robot_name, run_number, start_time, testbed_conf):
+    def start(self, benchmark_group, robot_name, run_number, start_time, testbed_conf, preprocess_dir):
         self.benchmark_group = benchmark_group
         self.robot_name = robot_name
         self.run_number = run_number
         self.start_time = start_time
+        self.preprocess_dir = preprocess_dir
 
         # Length of moving average and Savitzky-Golay filter window in seconds
         self.moving_average_width = rospy.get_param('door_angle_filter_window_length')
@@ -86,7 +87,7 @@ class PreprocessObject(BasePreprocess):
             df.plot(x='time')
             plt.show()
 
-        self.angular_acceleration_file = preprocess_utils.open_preprocessed_csv(self.benchmark_group, self.robot_name, self.run_number, self.start_time, self.data_type)
+        self.angular_acceleration_file = preprocess_utils.open_preprocessed_csv(self.preprocess_dir, self.benchmark_group, self.robot_name, self.run_number, self.start_time, self.data_type)
 
         for time, acc in zip(self.timestamp_list, angular_acceleration_list):
             if not np.math.isnan(acc):

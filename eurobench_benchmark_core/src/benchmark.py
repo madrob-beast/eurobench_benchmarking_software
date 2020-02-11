@@ -90,17 +90,22 @@ class Benchmark(object):
         rospy.loginfo(self.get_benchmark_info() + '\n')
 
     def execute(self):
+        start_time_str = self.start_time.strftime('%Y%m%d_%H%M%S')
+        
+        # Create a directory for this benchmark's files
+        benchmark_results_dir = path.join(self.output_dir, '%s_%s_%03d_%s' % (self.benchmark_group, self.robot_name, self.run_number, start_time_str))
+        makedirs(benchmark_results_dir)
+
         if self.live_benchmark:
             # Setup testbed
             self.testbed_comm.setup_testbed()
 
             # File name and path of rosbag
-            start_time_str = self.start_time.strftime('%Y%m%d_%H%M%S')
-            rosbag_filepath = path.join(self.output_dir, 'subject_%s_%s_%03d_%s.bag' % 
+            rosbag_filepath = path.join(benchmark_results_dir, 'subject_%s_%s_%03d_%s.bag' % 
                 (self.robot_name, self.benchmark_group, self.run_number, start_time_str))
 
             # Save testbed config yaml file, including rosbag filepath
-            self.testbed_conf_path = path.join(self.output_dir, 'subject_%s_%s_%03d_%s.yaml' % 
+            self.testbed_conf_path = path.join(benchmark_results_dir, 'subject_%s_%s_%03d_%s.yaml' % 
                 (self.robot_name, self.testbed_device, self.run_number, start_time_str))
             self.testbed_conf = self.testbed_comm.write_testbed_conf_file(self.testbed_conf_path, self.start_time_ros, self.robot_name, self.run_number, rosbag_filepath)
 
@@ -120,8 +125,12 @@ class Benchmark(object):
                 return
 
 
+        # Create a dir for preprocessed files
+        preprocess_dir = path.join(benchmark_results_dir, 'preprocessed')
+        makedirs(preprocess_dir)
+
         # Start preprocessing scripts
-        self.preprocess.start(self.robot_name, self.run_number, self.start_time, self.testbed_conf, self.live_benchmark)
+        self.preprocess.start(self.robot_name, self.run_number, self.start_time, self.testbed_conf, self.live_benchmark, preprocess_dir)
 
         # Loop while benchmark is running
         while not self.terminated:
@@ -136,12 +145,16 @@ class Benchmark(object):
             if not response.success:
                 rospy.logerr('Could not stop recording rosbag')
 
+        # Create a dir for PI result files
+        performance_dir = path.join(benchmark_results_dir, 'performance')
+        makedirs(performance_dir)
+
         # Calculate PIs - Run all pre-processing scripts
         for performance_indicator_module in self.performance_indicators:
             pi = globals()[performance_indicator_module].performance_indicator
 
             try:
-                pi(preprocessed_filenames_dict, self.testbed_conf, self.output_dir, self.start_time)
+                pi(preprocessed_filenames_dict, self.testbed_conf, performance_dir, self.start_time)
             except Exception as e:
                 rospy.logerr("Error in performance indicator: {pi_name}, Type: {ex_type}, Value: {ex_val}".format(pi_name=performance_indicator_module, ex_type=str(type(e)), ex_val=str(e)))
                 continue

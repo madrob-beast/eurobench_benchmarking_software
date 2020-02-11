@@ -82,8 +82,8 @@ class PreprocessObject(BasePreprocess):
         # Enable visualisation of passage sensors and door closing/opening events in the terminal
         self.print_debug_info = False
 
-    def start(self, benchmark_group, robot_name, run_number, start_time, testbed_conf):
-        self.events_sequence_file = preprocess_utils.open_preprocessed_csv(benchmark_group, robot_name, run_number,
+    def start(self, benchmark_group, robot_name, run_number, start_time, testbed_conf, preprocess_dir):
+        self.events_sequence_file = preprocess_utils.open_preprocessed_csv(preprocess_dir, benchmark_group, robot_name, run_number,
                                                                            start_time, self.data_type)
 
         # start_time event

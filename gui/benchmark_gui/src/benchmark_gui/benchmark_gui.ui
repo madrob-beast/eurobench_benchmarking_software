@@ -310,9 +310,9 @@
    <widget class="QPushButton" name="start_from_bag_button">
     <property name="geometry">
      <rect>
-      <x>41</x>
+      <x>36</x>
       <y>100</y>
-      <width>149</width>
+      <width>160</width>
       <height>41</height>
      </rect>
     </property>
@@ -381,7 +381,7 @@ offline benchmark</string>
     <rect>
      <x>300</x>
      <y>206</y>
-     <width>121</width>
+     <width>141</width>
      <height>17</height>
     </rect>
    </property>
@@ -504,7 +504,7 @@ offline benchmark</string>
     <rect>
      <x>512</x>
      <y>108</y>
-     <width>201</width>
+     <width>211</width>
      <height>37</height>
     </rect>
    </property>

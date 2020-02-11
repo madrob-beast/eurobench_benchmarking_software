@@ -9,8 +9,8 @@ class PreprocessObject(BasePreprocess):
     def __init__(self, data_type):
         self.data_type = data_type
 
-    def start(self, benchmark_group, robot_name, run_number, start_time, testbed_conf):
-        self.handle_force_file = preprocess_utils.open_preprocessed_csv(benchmark_group, robot_name, run_number, start_time, self.data_type)
+    def start(self, benchmark_group, robot_name, run_number, start_time, testbed_conf, preprocess_dir):
+        self.handle_force_file = preprocess_utils.open_preprocessed_csv(preprocess_dir, benchmark_group, robot_name, run_number, start_time, self.data_type)
         
         handle_node_name = rospy.get_param('handle_node_name')
         self.handle_sub = rospy.Subscriber('/' + handle_node_name + '/state', Handle, self.handle_state_callback)

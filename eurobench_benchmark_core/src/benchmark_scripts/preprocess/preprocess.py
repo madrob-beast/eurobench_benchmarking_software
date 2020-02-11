@@ -28,7 +28,7 @@ class Preprocess(object):
         self.running_preprocess_scripts = []
         self.preprocessed_files = {}
 
-    def start(self, robot_name, run_number, start_time, testbed_conf, live_benchmark):
+    def start(self, robot_name, run_number, start_time, testbed_conf, live_benchmark, preprocess_dir):
         if not live_benchmark:
             # Not live, rosbag needs to be played.
             topic_remappings = []
@@ -58,7 +58,7 @@ class Preprocess(object):
             preprocess = globals()[preprocess_module].PreprocessObject(preprocess_module)
             self.running_preprocess_scripts.append(preprocess)
 
-            preprocess.start(self.benchmark_group, robot_name, run_number, start_time, testbed_conf)
+            preprocess.start(self.benchmark_group, robot_name, run_number, start_time, testbed_conf, preprocess_dir)
 
         self.saving_data = True
     
