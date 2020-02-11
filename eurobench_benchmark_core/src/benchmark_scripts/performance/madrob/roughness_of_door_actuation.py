@@ -30,7 +30,7 @@ def performance_indicator(preprocessed_filenames_dict, testbed_conf, output_dir,
 
 if __name__ == '__main__':
     arg_len = 3
-    script_name = 'smoothness_of_door_actuation'
+    script_name = 'roughness_of_door_actuation'
     if len(argv) != arg_len:
         print "[Performance Indicator {script_name}] Error: arguments must be {script_name}.py handle_force.csv output_dir".format(script_name=script_name)
         exit(-1)
