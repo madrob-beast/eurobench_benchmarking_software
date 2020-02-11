@@ -38,14 +38,11 @@ class Benchmark(object):
         self.preprocess = Preprocess(self.benchmark_group)
 
         if benchmark_group == 'MADROB':
-            self.testbed_device = 'door'
             self.testbed_comm = MadrobTestbedComm(self.config['benchmarks'])
 
             self.performance_indicators = benchmark_scripts.performance.madrob.__all__
 
         if benchmark_group == 'BEAST':
-            self.testbed_device = 'trolley'
-
             self.performance_indicators = benchmark_scripts.performance.beast.__all__
 
     def setup(self, robot_name, run_number, live_benchmark, testbed_conf):
@@ -91,9 +88,10 @@ class Benchmark(object):
 
     def execute(self):
         start_time_str = self.start_time.strftime('%Y%m%d_%H%M%S')
+        benchmark_id = '%s_%s_%03d_%s' % (self.benchmark_group, self.robot_name, self.run_number, start_time_str)
         
         # Create a directory for this benchmark's files
-        benchmark_results_dir = path.join(self.output_dir, '%s_%s_%03d_%s' % (self.benchmark_group, self.robot_name, self.run_number, start_time_str))
+        benchmark_results_dir = path.join(self.output_dir, benchmark_id)
         makedirs(benchmark_results_dir)
 
         if self.live_benchmark:
@@ -101,12 +99,10 @@ class Benchmark(object):
             self.testbed_comm.setup_testbed()
 
             # File name and path of rosbag
-            rosbag_filepath = path.join(benchmark_results_dir, 'subject_%s_%s_%03d_%s.bag' % 
-                (self.robot_name, self.benchmark_group, self.run_number, start_time_str))
+            rosbag_filepath = path.join(benchmark_results_dir, '%s.bag' % (benchmark_id))
 
             # Save testbed config yaml file, including rosbag filepath
-            self.testbed_conf_path = path.join(benchmark_results_dir, 'subject_%s_%s_%03d_%s.yaml' % 
-                (self.robot_name, self.testbed_device, self.run_number, start_time_str))
+            self.testbed_conf_path = path.join(benchmark_results_dir, '%s.yaml' % (benchmark_id))
             self.testbed_conf = self.testbed_comm.write_testbed_conf_file(self.testbed_conf_path, self.start_time_ros, self.robot_name, self.run_number, rosbag_filepath)
 
             # Start recording rosbag
