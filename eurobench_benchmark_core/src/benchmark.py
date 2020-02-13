@@ -13,10 +13,10 @@ from std_srvs.srv import Trigger
 from eurobench_bms_msgs_and_srvs.srv import StartRecording, StartRecordingRequest
 from benchmark_scripts.testbed_comm.madrob_testbed_comm import MadrobTestbedComm
 from benchmark_scripts.preprocess.preprocess import Preprocess
-import benchmark_scripts.performance.madrob
-from benchmark_scripts.performance.madrob import *
-import benchmark_scripts.performance.beast
-from benchmark_scripts.performance.beast import *
+import madrob_beast_pi.madrob
+from madrob_beast_pi.madrob import *
+import madrob_beast_pi.beast
+from madrob_beast_pi.beast import *
 
 
 class Benchmark(object):
@@ -40,10 +40,10 @@ class Benchmark(object):
         if benchmark_group == 'MADROB':
             self.testbed_comm = MadrobTestbedComm(self.config['benchmarks'])
 
-            self.performance_indicators = benchmark_scripts.performance.madrob.__all__
+            self.performance_indicators = madrob_beast_pi.madrob.__all__
 
         if benchmark_group == 'BEAST':
-            self.performance_indicators = benchmark_scripts.performance.beast.__all__
+            self.performance_indicators = madrob_beast_pi.beast.__all__
 
     def setup(self, robot_name, run_number, live_benchmark, testbed_conf):
         self.terminated = False

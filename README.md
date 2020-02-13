@@ -6,19 +6,24 @@ Benchmark core, benchmark scripts and graphical interface for the MADROB and BEA
 ## Dependencies
 This package currently depends on:
 ```
+https://github.com/madrob-beast/madrob_beast_pi.git
 https://github.com/madrob-beast/madrob_msgs.git
 https://github.com/madrob-beast/madrob_srvs.git
 ```
 
 ## Installation
-
-Install the ROS package as usual:
+The required ROS packages and the [madrob_beast_pi](https://github.com/madrob-beast/madrob_beast_pi.git) python module should be cloned and installed:
 ```
-cd catkin_workspace/src
+git clone https://github.com/madrob-beast/madrob_beast_pi.git
+python -m pip install madrob_beast_pi/
+
+cd ~/catkin_ws/src #or another ROS workspace
 git clone https://github.com/madrob-beast/eurobench_benchmarking_software.git
-pip install -r eurobench_benchmarking_software/requirements.txt
+git clone https://github.com/madrob-beast/madrob_msgs.git
+git clone https://github.com/madrob-beast/madrob_srvs.git
 cd ../
 catkin_make
+
 ```
 
 Note: The default output directory is `~/eurobench_output`, and can be configured in `config/general.yaml`.
