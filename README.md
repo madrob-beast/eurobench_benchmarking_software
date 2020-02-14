@@ -26,7 +26,7 @@ catkin_make
 
 ```
 
-Note: The default output directory is `~/eurobench_output`, and can be configured in `config/general.yaml`.
+**Note** To keep the software up-to-date, run `git pull`, reinstall `madrob_beast_pi` and rebuild the catkin workspace.
 
 ## Running benchmarks
 
@@ -55,3 +55,5 @@ Use the GUI to select the current robot, the benchmark to run, and specific sett
 Benchmarks can be started, stopped prematurely, and the results can be viewed on the right.
 
 When a benchmark finishes, its results are written to the output directory.
+
+**Note**: The default output directory is `~/eurobench_output`, and can be configured in `config/general.yaml`.
