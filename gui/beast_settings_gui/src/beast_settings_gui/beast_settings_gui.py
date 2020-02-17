@@ -3,9 +3,10 @@ import rospy
 
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
-from python_qt_binding.QtWidgets import QWidget, QLabel, QSlider
+from python_qt_binding.QtWidgets import QWidget, QComboBox
 
 from std_msgs.msg import UInt16
+from eurobench_bms_msgs_and_srvs.srv import *
 
 
 class beast_settings_gui(Plugin):
@@ -24,10 +25,8 @@ class beast_settings_gui(Plugin):
         self._widget.setObjectName('BEAST Settings')
         self._widget.setWindowTitle('BEAST Settings')
 
-        self.wheel_stiffness_value_label = self._widget.findChild(QLabel, 'wheel_stiffness_value')
-
-        self.wheel_stiffness_slider = self._widget.findChild(QSlider, 'wheel_stiffness_slider')
-        self.wheel_stiffness_slider.valueChanged.connect(self.update_wheel_stiffness)
+        self.trolley_stiffness_combo = self._widget.findChild(QComboBox, 'trolley_stiffness_combo')
+        self.trolley_stiffness_combo.addItems(['0', '1', '2'])
 
         context.add_widget(self._widget)
 
@@ -47,14 +46,12 @@ class beast_settings_gui(Plugin):
         # v = instance_settings.value(k)
         pass
 
-    def update_wheel_stiffness(self, value):
-        self.wheel_stiffness_value_label.setText(str(value) + ' N')
-
     def run_rospy_node(self):
-        self.wheel_stiffness_pub = rospy.Publisher('beast/wheel_stiffness', UInt16, queue_size=1)
-        
-        rospy.Timer(rospy.Duration(1), self.publish_settings)
+        self.benchmark_params_service = rospy.Service(
+            'beast/gui/benchmark_params', BeastBenchmarkParams, self.benchmark_params_callback)
 
-    def publish_settings(self, _):
-        if not rospy.is_shutdown():
-            self.wheel_stiffness_pub.publish(self.wheel_stiffness_slider.value())
+    def benchmark_params_callback(self, request):
+        benchmark_params_response = BeastBenchmarkParamsResponse()
+        benchmark_params_response.stiffness = int(self.trolley_stiffness_combo.currentText())
+
+        return benchmark_params_response

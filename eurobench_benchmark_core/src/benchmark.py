@@ -12,6 +12,7 @@ from exceptions import NotImplementedError
 from std_srvs.srv import Trigger
 from eurobench_bms_msgs_and_srvs.srv import StartRecording, StartRecordingRequest
 from benchmark_scripts.testbed_comm.madrob_testbed_comm import MadrobTestbedComm
+from benchmark_scripts.testbed_comm.beast_testbed_comm import BeastTestbedComm
 from benchmark_scripts.preprocess.preprocess import Preprocess
 import madrob_beast_pi.madrob
 from madrob_beast_pi.madrob import *
@@ -43,6 +44,8 @@ class Benchmark(object):
             self.performance_indicators = madrob_beast_pi.madrob.__all__
 
         if benchmark_group == 'BEAST':
+            self.testbed_comm = BeastTestbedComm()
+
             self.performance_indicators = madrob_beast_pi.beast.__all__
 
     def setup(self, robot_name, run_number, live_benchmark, testbed_conf):

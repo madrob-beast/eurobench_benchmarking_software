@@ -22,6 +22,8 @@
   <depend>std_srvs</depend>
   <depend>madrob_msgs</depend>
   <depend>madrob_srvs</depend>
+  <depend>beast_msgs</depend>
+  <depend>beast_srvs</depend>
   <depend>eurobench_bms_msgs_and_srvs</depend>
 
   <export>

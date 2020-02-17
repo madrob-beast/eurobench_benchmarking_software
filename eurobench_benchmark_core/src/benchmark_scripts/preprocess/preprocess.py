@@ -6,7 +6,6 @@ from os import path
 from std_srvs.srv import Trigger, TriggerResponse
 from benchmark_scripts.preprocess.base_preprocess import BasePreprocess
 from eurobench_bms_msgs_and_srvs.srv import PlayRosbag, PlayRosbagRequest
-from madrob_msgs.msg import Door, Handle, Passage
 import benchmark_scripts.preprocess.madrob
 from benchmark_scripts.preprocess.madrob import *
 import benchmark_scripts.preprocess.beast
@@ -18,9 +17,13 @@ class Preprocess(object):
 
         if benchmark_group == 'MADROB':
             self.preprocess_scripts = benchmark_scripts.preprocess.madrob.__all__
+
+            self.node_name_params = ['door_node_name', 'handle_node_name', 'passage_node_name']
         
         if benchmark_group == 'BEAST':
             self.preprocess_scripts = benchmark_scripts.preprocess.beast.__all__
+
+            self.node_name_params = ['trolley_node_name', 'handle_node_name']
 
         self.saving_data = False
         self.playing_rosbag  = False
@@ -33,14 +36,12 @@ class Preprocess(object):
             # Not live, rosbag needs to be played.
             topic_remappings = []
 
-            if self.benchmark_group == 'MADROB':
-                # Remap topic names, which will add a '_bag' suffix
-                topic_remappings += [rospy.get_param('door_node_name'), rospy.get_param('handle_node_name'), rospy.get_param('passage_node_name')]
-                
+            for node_name in self.node_name_params:
+                # Remap node names, which will add a '_bag' suffix
+                topic_remappings.append(rospy.get_param(node_name))
+
                 # Temporarily change node names to the ones from the bag, so that live ones are ignored
-                rospy.set_param('door_node_name', rospy.get_param('door_node_name') + '_bag')
-                rospy.set_param('handle_node_name', rospy.get_param('handle_node_name') + '_bag')
-                rospy.set_param('passage_node_name', rospy.get_param('passage_node_name') + '_bag')
+                rospy.set_param(node_name, rospy.get_param(node_name) + '_bag')
 
             # Play rosbag
             play_rosbag_service = rospy.ServiceProxy('/eurobench_rosbag_controller/play_rosbag', PlayRosbag)
@@ -77,9 +78,8 @@ class Preprocess(object):
 
         if self.playing_rosbag:
             # Remove '_bag' from node names
-            rospy.set_param('door_node_name', rospy.get_param('door_node_name').replace('_bag', ''))
-            rospy.set_param('handle_node_name', rospy.get_param('handle_node_name').replace('_bag', ''))
-            rospy.set_param('passage_node_name', rospy.get_param('passage_node_name').replace('_bag', ''))
+            for node_name in self.node_name_params:
+                rospy.set_param(node_name, rospy.get_param(node_name).replace('_bag', ''))
 
             stop_rosbag_service = rospy.ServiceProxy('/eurobench_rosbag_controller/stop_rosbag', Trigger)
             stop_rosbag_service()

@@ -23,6 +23,7 @@ add_service_files(
   BenchmarkCoreRobotNames.srv
   MadrobSettings.srv
   MadrobBenchmarkParams.srv
+  BeastBenchmarkParams.srv
   PlayRosbag.srv
 )
 

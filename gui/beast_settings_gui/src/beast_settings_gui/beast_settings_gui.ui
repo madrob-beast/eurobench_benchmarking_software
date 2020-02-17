@@ -16,28 +16,12 @@
   <property name="windowTitle">
    <string>beast_settings_gui</string>
   </property>
-  <widget class="QSlider" name="wheel_stiffness_slider">
-   <property name="geometry">
-    <rect>
-     <x>150</x>
-     <y>55</y>
-     <width>271</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="maximum">
-    <number>20</number>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
-   </property>
-  </widget>
-  <widget class="QLabel" name="wheel_stiffness">
+  <widget class="QLabel" name="trolley_stiffness">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>50</y>
-     <width>131</width>
+     <width>141</width>
      <height>21</height>
     </rect>
    </property>
@@ -47,25 +31,17 @@
     </font>
    </property>
    <property name="text">
-    <string>Wheel Stiffness</string>
+    <string>Trolley Stiffness</string>
    </property>
   </widget>
-  <widget class="QLabel" name="wheel_stiffness_value">
+  <widget class="QComboBox" name="trolley_stiffness_combo">
    <property name="geometry">
     <rect>
-     <x>440</x>
-     <y>55</y>
-     <width>67</width>
-     <height>17</height>
+     <x>148</x>
+     <y>48</y>
+     <width>71</width>
+     <height>27</height>
     </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>12</pointsize>
-    </font>
-   </property>
-   <property name="text">
-    <string>0 N</string>
    </property>
   </widget>
  </widget>

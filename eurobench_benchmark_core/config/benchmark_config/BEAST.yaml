@@ -1,0 +1,4 @@
+benchmark_group: BEAST
+
+trolley_node_name: beast/trolley
+handle_node_name: beast/handle

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<launch>
+  <rosparam file="$(find eurobench_benchmark_core)/config/general.yaml" command="load" subst_value="true" />
+
+  <rosparam file="$(find eurobench_benchmark_core)/config/benchmark_config/BEAST.yaml" command="load" subst_value="true" />
+
+  <include file="$(find eurobench_rosbag_controller)/launch/controller.launch" />
+
+  <node name="eurobench_benchmark_core" pkg="eurobench_benchmark_core" type="benchmark_core.py" respawn="true" output="screen">
+    <param name="benchmark_group" value="BEAST" />
+  </node>
+
+</launch>

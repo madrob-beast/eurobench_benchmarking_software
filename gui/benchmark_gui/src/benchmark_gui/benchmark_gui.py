@@ -300,10 +300,15 @@ class BenchmarkGui(Plugin):
             except rospy.ROSException:
                 self.testbed_node_available = False
 
-
         if(self.benchmark_group == 'BEAST'):
-            # TODO
-            pass
+            trolley_node_name = rospy.get_param('trolley_node_name')
+            set_stiffness_service_name = '/' + trolley_node_name + '/set_stiffness'
+
+            try:
+                rospy.wait_for_service(set_stiffness_service_name, timeout=0.5)
+                self.testbed_node_available = True
+            except rospy.ROSException:
+                self.testbed_node_available = False
 
         self.update_required_node_labels()
 

@@ -9,6 +9,8 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   madrob_msgs
   madrob_srvs
+  beast_msgs
+  beast_srvs
   sensor_msgs
   eurobench_bms_msgs_and_srvs
 )
