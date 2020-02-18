@@ -27,7 +27,7 @@ class MadrobTestbedComm(BaseTestbedComm):
         self.robot_approach_side = response.robot_approach_side
 
         # Set door controller mode
-        door_node_name = rospy.get_param('door_node_name')
+        door_node_name = rospy.get_param('testbed_nodes')['door']
 
         set_mode_service_name = '/' + door_node_name + '/set_mode'
         try:

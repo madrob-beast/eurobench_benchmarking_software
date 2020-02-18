@@ -291,7 +291,7 @@ class BenchmarkGui(Plugin):
 
         # Testbed
         if(self.benchmark_group == 'MADROB'):
-            door_node_name = rospy.get_param('door_node_name')
+            door_node_name = rospy.get_param('testbed_nodes')['door']
             set_mode_service_name = '/' + door_node_name + '/set_mode'
 
             try:
@@ -301,7 +301,7 @@ class BenchmarkGui(Plugin):
                 self.testbed_node_available = False
 
         if(self.benchmark_group == 'BEAST'):
-            trolley_node_name = rospy.get_param('trolley_node_name')
+            trolley_node_name = rospy.get_param('testbed_nodes')['trolley']
             set_stiffness_service_name = '/' + trolley_node_name + '/set_stiffness'
 
             try:

@@ -21,7 +21,7 @@ class BeastTestbedComm(BaseTestbedComm):
         self.trolley_stiffness = response.stiffness
 
         # Set stiffness in the trolley
-        trolley_node_name = rospy.get_param('trolley_node_name')
+        trolley_node_name = rospy.get_param('testbed_nodes')['trolley']
         set_stiffness_service_name = '/' + trolley_node_name + '/set_stiffness'
         set_stiffness = rospy.ServiceProxy(set_stiffness_service_name, SetStiffness)
 

@@ -9,6 +9,8 @@ This package currently depends on:
 https://github.com/madrob-beast/madrob_beast_pi.git
 https://github.com/madrob-beast/madrob_msgs.git
 https://github.com/madrob-beast/madrob_srvs.git
+https://github.com/madrob-beast/beast_msgs.git
+https://github.com/madrob-beast/beast_srvs.git
 ```
 
 ## Installation
@@ -21,6 +23,8 @@ cd ~/catkin_ws/src #or another ROS workspace
 git clone https://github.com/madrob-beast/eurobench_benchmarking_software.git
 git clone https://github.com/madrob-beast/madrob_msgs.git
 git clone https://github.com/madrob-beast/madrob_srvs.git
+git clone https://github.com/madrob-beast/beast_msgs.git
+git clone https://github.com/madrob-beast/beast_srvs.git
 cd ../
 catkin_make
 

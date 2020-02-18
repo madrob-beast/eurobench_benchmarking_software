@@ -12,7 +12,7 @@ class PreprocessObject(BasePreprocess):
     def start(self, benchmark_group, robot_name, run_number, start_time, testbed_conf, preprocess_dir):
         self.door_angle_file = preprocess_utils.open_preprocessed_csv(preprocess_dir, benchmark_group, robot_name, run_number, start_time, self.data_type)
         
-        door_node_name = rospy.get_param('door_node_name')
+        door_node_name = rospy.get_param('testbed_nodes')['door']
         self.door_sub = rospy.Subscriber('/' + door_node_name + '/state', Door, self.door_state_callback)
 
     def finish(self):

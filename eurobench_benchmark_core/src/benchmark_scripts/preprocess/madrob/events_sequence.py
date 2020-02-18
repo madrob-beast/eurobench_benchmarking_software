@@ -106,9 +106,9 @@ class PreprocessObject(BasePreprocess):
         self.events.append((start_time_ros, 'benchmark_start'))
 
         # Params
-        door_node_name = rospy.get_param('door_node_name')
-        passage_node_name = rospy.get_param('passage_node_name')
-        handle_node_name = rospy.get_param('handle_node_name')
+        door_node_name = rospy.get_param('testbed_nodes')['door']
+        passage_node_name = rospy.get_param('testbed_nodes')['passage']
+        handle_node_name = rospy.get_param('testbed_nodes')['handle']
         output_passage_topic_name = rospy.get_param('output_passage_topic_name', 'madrob/preprocessed_data/passage')
 
         # Publishers

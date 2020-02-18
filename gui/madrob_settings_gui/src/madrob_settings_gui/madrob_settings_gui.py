@@ -193,8 +193,8 @@ class madrob_settings_gui(Plugin):
         self.benchmark_params_service = rospy.Service(
             'madrob/gui/benchmark_params', MadrobBenchmarkParams, self.benchmark_params_callback)
 
-        self.door_node_name = rospy.get_param('door_node_name')
-        self.handle_node_name = rospy.get_param('handle_node_name')
+        self.door_node_name = rospy.get_param('testbed_nodes')['door']
+        self.handle_node_name = rospy.get_param('testbed_nodes')['handle']
 
     def benchmark_params_callback(self, request):
         benchmark_params_response = MadrobBenchmarkParamsResponse()

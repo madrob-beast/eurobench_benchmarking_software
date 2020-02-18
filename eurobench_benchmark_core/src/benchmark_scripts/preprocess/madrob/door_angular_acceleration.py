@@ -42,7 +42,7 @@ class PreprocessObject(BasePreprocess):
         self.lp_angle_list = list()
         self.timestamp_list = list()
 
-        door_node_name = rospy.get_param('door_node_name')
+        door_node_name = rospy.get_param('testbed_nodes')['door']
         self.door_sub = rospy.Subscriber('/' + door_node_name + '/state', Door, self.door_state_callback)
 
         rospy.loginfo("Preprocess script started: {name}".format(name=self.data_type))

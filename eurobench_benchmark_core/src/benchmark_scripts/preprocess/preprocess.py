@@ -17,13 +17,9 @@ class Preprocess(object):
 
         if benchmark_group == 'MADROB':
             self.preprocess_scripts = benchmark_scripts.preprocess.madrob.__all__
-
-            self.node_name_params = ['door_node_name', 'handle_node_name', 'passage_node_name']
         
         if benchmark_group == 'BEAST':
             self.preprocess_scripts = benchmark_scripts.preprocess.beast.__all__
-
-            self.node_name_params = ['trolley_node_name', 'handle_node_name']
 
         self.saving_data = False
         self.playing_rosbag  = False
@@ -34,14 +30,15 @@ class Preprocess(object):
     def start(self, robot_name, run_number, start_time, testbed_conf, live_benchmark, preprocess_dir):
         if not live_benchmark:
             # Not live, rosbag needs to be played.
-            topic_remappings = []
 
-            for node_name in self.node_name_params:
-                # Remap node names, which will add a '_bag' suffix
-                topic_remappings.append(rospy.get_param(node_name))
+            # Remap node names, which will add a '_bag' suffix
+            testbed_nodes_dict = rospy.get_param('testbed_nodes')
+            topic_remappings = testbed_nodes_dict.values()
 
-                # Temporarily change node names to the ones from the bag, so that live ones are ignored
-                rospy.set_param(node_name, rospy.get_param(node_name) + '_bag')
+            # Temporarily change node names to the ones from the bag, so that live ones are ignored
+            for node, name in testbed_nodes_dict.items():
+                testbed_nodes_dict[node] = name + '_bag'
+            rospy.set_param('testbed_nodes', testbed_nodes_dict)
 
             # Play rosbag
             play_rosbag_service = rospy.ServiceProxy('/eurobench_rosbag_controller/play_rosbag', PlayRosbag)
@@ -78,8 +75,10 @@ class Preprocess(object):
 
         if self.playing_rosbag:
             # Remove '_bag' from node names
-            for node_name in self.node_name_params:
-                rospy.set_param(node_name, rospy.get_param(node_name).replace('_bag', ''))
+            testbed_nodes_dict = rospy.get_param('testbed_nodes')
+            for node, name in testbed_nodes_dict.items():
+                testbed_nodes_dict[node] = name.replace('_bag', '')
+            rospy.set_param('testbed_nodes', testbed_nodes_dict)
 
             stop_rosbag_service = rospy.ServiceProxy('/eurobench_rosbag_controller/stop_rosbag', Trigger)
             stop_rosbag_service()
