@@ -153,7 +153,7 @@ class BenchmarkGui(Plugin):
 
         try:
             with open(testbed_conf_path, 'r') as testbed_conf_file:
-                testbed_conf = yaml.load(testbed_conf_file)
+                testbed_conf = yaml.load(testbed_conf_file, Loader=yaml.FullLoader)
 
             start_benchmark = rospy.ServiceProxy('bmcore/start_benchmark', StartBenchmark)
 

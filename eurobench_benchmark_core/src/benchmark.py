@@ -1,23 +1,25 @@
 #!/usr/bin/env python
 
 import rospy
-import yaml
 import json
-import time
 import bms_utils
 from datetime import datetime, timedelta
 from collections import OrderedDict
 from os import path, makedirs
-from exceptions import NotImplementedError
 from std_srvs.srv import Trigger
 from eurobench_bms_msgs_and_srvs.srv import StartRecording, StartRecordingRequest
 from benchmark_scripts.testbed_comm.madrob_testbed_comm import MadrobTestbedComm
 from benchmark_scripts.testbed_comm.beast_testbed_comm import BeastTestbedComm
 from benchmark_scripts.preprocess.preprocess import Preprocess
-import madrob_beast_pi.madrob
-from madrob_beast_pi.madrob import *
-import madrob_beast_pi.beast
-from madrob_beast_pi.beast import *
+
+try:
+    import madrob_beast_pi.madrob
+    from madrob_beast_pi.madrob import *
+    import madrob_beast_pi.beast
+    from madrob_beast_pi.beast import *
+except ImportError:
+    madrob_beast_pi = None
+    rospy.logerr("could not import performance indicator scripts")
 
 
 class Benchmark(object):
@@ -32,21 +34,31 @@ class Benchmark(object):
             rospy.logfatal('eurobench_rosbag_controller: start_recording service unavailable.')
             rospy.signal_shutdown('Rosbag controller unavailable')
 
-        self.start_recording_service = rospy.ServiceProxy('/eurobench_rosbag_controller/start_recording',
-                                                          StartRecording)
+        self.start_recording_service = rospy.ServiceProxy('/eurobench_rosbag_controller/start_recording', StartRecording)
         self.stop_recording_service = rospy.ServiceProxy('/eurobench_rosbag_controller/stop_recording', Trigger)
 
         self.preprocess = Preprocess(self.benchmark_group)
 
         if benchmark_group == 'MADROB':
             self.testbed_comm = MadrobTestbedComm(self.config['benchmarks'])
-
-            self.performance_indicators = madrob_beast_pi.madrob.__all__
-
         if benchmark_group == 'BEAST':
             self.testbed_comm = BeastTestbedComm()
 
-            self.performance_indicators = madrob_beast_pi.beast.__all__
+        if madrob_beast_pi is not None:
+            if benchmark_group == 'MADROB':
+                self.performance_indicators = madrob_beast_pi.madrob.__all__
+            if benchmark_group == 'BEAST':
+                self.performance_indicators = madrob_beast_pi.beast.__all__
+
+        self.terminated = None
+        self.live_benchmark = None
+        self.testbed_conf = None
+        self.start_time = None
+        self.start_time_ros = None
+        self.result = None
+        self.robot_name = None
+        self.run_number = None
+        self.testbed_conf_path = None
 
     def setup(self, robot_name, run_number, live_benchmark, testbed_conf):
         self.terminated = False
@@ -102,10 +114,10 @@ class Benchmark(object):
             self.testbed_comm.setup_testbed()
 
             # File name and path of rosbag
-            rosbag_filepath = path.join(benchmark_results_dir, '%s.bag' % (benchmark_id))
+            rosbag_filepath = path.join(benchmark_results_dir, '%s.bag' % benchmark_id)
 
             # Save testbed config yaml file, including rosbag filepath
-            self.testbed_conf_path = path.join(benchmark_results_dir, '%s.yaml' % (benchmark_id))
+            self.testbed_conf_path = path.join(benchmark_results_dir, '%s.yaml' % benchmark_id)
             self.testbed_conf = self.testbed_comm.write_testbed_conf_file(self.testbed_conf_path, self.start_time_ros, self.robot_name, self.run_number, rosbag_filepath)
 
             # Start recording rosbag
@@ -122,7 +134,6 @@ class Benchmark(object):
             if not response.success:
                 rospy.logerr('Could not start recording rosbag')
                 return
-
 
         # Create a dir for preprocessed files
         preprocess_dir = path.join(benchmark_results_dir, 'preprocessed')
@@ -149,11 +160,12 @@ class Benchmark(object):
         makedirs(performance_dir)
 
         # Calculate PIs - Run all pre-processing scripts
-        for performance_indicator_module in self.performance_indicators:
-            pi = globals()[performance_indicator_module].performance_indicator
+        if madrob_beast_pi is not None:
+            for performance_indicator_module in self.performance_indicators:
+                pi = globals()[performance_indicator_module].performance_indicator
 
-            try:
-                pi(preprocessed_filenames_dict, self.testbed_conf, performance_dir, self.start_time)
-            except Exception as e:
-                rospy.logerr("Error in performance indicator: {pi_name}, Type: {ex_type}, Value: {ex_val}".format(pi_name=performance_indicator_module, ex_type=str(type(e)), ex_val=str(e)))
-                continue
+                try:
+                    pi(preprocessed_filenames_dict, self.testbed_conf, performance_dir, self.start_time)
+                except Exception as e:
+                    rospy.logerr("Error in performance indicator: {pi_name}, Type: {ex_type}, Value: {ex_val}".format(pi_name=performance_indicator_module, ex_type=str(type(e)), ex_val=str(e)))
+                    continue

@@ -16,10 +16,10 @@ https://github.com/madrob-beast/beast_srvs.git
 ## Installation
 The required ROS packages and the [madrob_beast_pi](https://github.com/madrob-beast/madrob_beast_pi.git) python module should be cloned and installed:
 ```
+cd ~/catkin_ws/src  # or another ROS workspace
 git clone https://github.com/madrob-beast/madrob_beast_pi.git
-python -m pip install madrob_beast_pi/
+python -m pip install -e madrob_beast_pi/src/madrob_beast_pi
 
-cd ~/catkin_ws/src #or another ROS workspace
 git clone https://github.com/madrob-beast/eurobench_benchmarking_software.git
 git clone https://github.com/madrob-beast/madrob_msgs.git
 git clone https://github.com/madrob-beast/madrob_srvs.git

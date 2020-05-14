@@ -1,13 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
+import pandas as pd
 import rospy
 import message_filters
-
 from benchmark_scripts.preprocess.base_preprocess import BasePreprocess
-from benchmark_scripts.preprocess import preprocess_utils
-
 from madrob_msgs.msg import Door, Passage, Handle
 from std_msgs.msg import Float64
 
@@ -15,9 +12,8 @@ import numpy as np
 
 
 class PreprocessObject(BasePreprocess):
-    def __init__(self, data_type):
-        super(PreprocessObject, self).__init__(data_type)
-        self.data_type = data_type
+    def __init__(self):
+        super(PreprocessObject, self).__init__(data_format_name="events")
 
         # Passage sensors values (a subset of the total number of sensors available from the testbed).
         self.cw_num_sensors = 5
@@ -89,16 +85,14 @@ class PreprocessObject(BasePreprocess):
         self.ccw_left_sub = None
         self.handle_sub = None
         self.door_proximity_timesync = None
-        self.events_sequence_file = None
 
         # Enable visualisation of passage sensors and door closing/opening events in the terminal.
         self.print_debug_info = False
 
-        rospy.loginfo("Preprocess script initialised: events_sequence")
-
     def start(self, benchmark_group, robot_name, run_number, start_time, testbed_conf, preprocess_dir):
-        self.events_sequence_file = preprocess_utils.open_preprocessed_csv(preprocess_dir, benchmark_group, robot_name, run_number,
-                                                                           start_time, self.data_type)
+        self.robot_name = robot_name
+        self.run_number = run_number
+        self.preprocess_dir = preprocess_dir
 
         # Start_time event
         start_time_split = str(testbed_conf['Start time']).split('.')
@@ -128,8 +122,6 @@ class PreprocessObject(BasePreprocess):
         self.door_proximity_timesync = message_filters.ApproximateTimeSynchronizer([self.cw_right_sub, self.cw_left_sub, self.ccw_right_sub, self.ccw_left_sub], 10, 0.1)
         self.door_proximity_timesync.registerCallback(self.door_proximity_callback)
 
-        rospy.loginfo("Preprocess script started: events_sequence")
-
         if self.print_debug_info:
             print "\tcw0\tcw1\tcw2\tcw3\tcw4\t|\tccw0\tccw1\tccw2\tccw3\tccw4"
 
@@ -158,21 +150,16 @@ class PreprocessObject(BasePreprocess):
         # sort by time (first element of the tuple)
         self.events.sort(key=lambda time_event: time_event[0])
 
-        if len(self.events) > 0:
-            first_event_time, _ = self.events[0]
-        else:
-            first_event_time = None
+        preprocess_file_path = self.preprocessed_csv_file_path()
+        df = pd.DataFrame(columns=['time', 'event'], data=self.events)
+        df['time'] = map(lambda ros_time: ros_time.to_sec(), df['time'].iloc[:])
 
-        for time, event in self.events:
-            if self.print_debug_info:
-                print "{t:1.3f}\t{e}".format(t=(time - first_event_time).to_sec(), e=event)
-            self.events_sequence_file.write('%d.%d, %s\n' % (time.secs, time.nsecs, event))
+        df[['time', 'event']].to_csv(preprocess_file_path, index=False)
 
-        self.events_sequence_file.close()
+        if self.print_debug_info:
+            print df
 
-        rospy.loginfo("Preprocess script finished: events_sequence")
-
-        return self.data_type, self.events_sequence_file.name
+        return self.data_format_name, preprocess_file_path
 
     def door_state_callback(self, door):
 
