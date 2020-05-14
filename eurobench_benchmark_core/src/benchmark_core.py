@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
-import sys
 import rospy
 import yaml
 from datetime import datetime
 import threading
-from os import path, makedirs
+from os import path
 from std_srvs.srv import Empty, EmptyResponse
 from eurobench_bms_msgs_and_srvs.srv import *
 from eurobench_bms_msgs_and_srvs.msg import *
@@ -26,10 +25,10 @@ class BenchmarkCore(object):
 
         # Load config from yaml file
         config_dir = rospy.get_param('benchmark_config_directory')
-        config_filepath = path.join(config_dir, '%s.yaml' % (self.benchmark_group))
+        config_filepath = path.join(config_dir, '%s.yaml' % self.benchmark_group)
 
         with open(config_filepath) as config_file:
-            self.config = yaml.load(config_file)
+            self.config = yaml.load(config_file, Loader=yaml.FullLoader)
 
         rospy.loginfo('EUROBENCH benchmark core started.')
 
@@ -43,7 +42,7 @@ class BenchmarkCore(object):
 
         testbed_conf = None
         if not request.live_benchmark:
-            testbed_conf = yaml.load(request.testbed_conf)
+            testbed_conf = yaml.load(request.testbed_conf, Loader=yaml.FullLoader)
 
         benchmark.setup(request.robot_name, request.run_number, request.live_benchmark, testbed_conf)
         
@@ -94,7 +93,7 @@ class BenchmarkCore(object):
         # Get names of madrob benchmark types, ordered by id
         benchmarks = self.config['benchmarks']
 
-        benchmark_types = sorted(benchmarks.items(), key = lambda kv:kv[1]['id'])
+        benchmark_types = sorted(benchmarks.items(), key=lambda kv: kv[1]['id'])
         benchmark_names = [benchmark_type[0] for benchmark_type in benchmark_types]
 
         madrob_settings_response.benchmark_types = benchmark_names

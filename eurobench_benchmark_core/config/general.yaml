@@ -2,8 +2,8 @@ benchmark_config_directory: $(find eurobench_benchmark_core)/config/benchmark_co
 benchmark_output_directory: "~/eurobench_output"
 
 robot_names:
-  - TestingBot
-  - TestRobot2
+  - "1"
+  - "2"
 
 excluded_topics:
   - /bmcore/state

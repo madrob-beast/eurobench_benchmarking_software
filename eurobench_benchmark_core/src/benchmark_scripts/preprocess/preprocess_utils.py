@@ -1,11 +1,14 @@
 import bms_utils
 from os import path
 
-def open_preprocessed_csv(preprocess_dir, benchmark_group, robot_name, run_number, start_time, data_type):
-    filename = 'subject_%s_%s_%s_%03d_%s.csv' % (robot_name, benchmark_group, data_type, run_number, start_time.strftime('%Y%m%d_%H%M%S'))
-    file = open(path.join(preprocess_dir, filename), 'w+')
 
-    header = 'timestamp,' + data_type
-    file.write(header + '\n')
+def preprocessed_csv_file_path(preprocess_dir, benchmark_group, robot_name, run_number, start_time, data_type):
+    file_name = 'subject_{robot_name}_{benchmark_group}_{data_type}_{run_number:03d}_{start_time}.csv'.format(
+        robot_name=robot_name,
+        benchmark_group=benchmark_group,
+        data_type=data_type,
+        run_number=run_number,
+        start_time=start_time.strftime('%Y%m%d_%H%M%S'))
+    file_path = path.join(preprocess_dir, file_name)
 
-    return file
+    return file_path
