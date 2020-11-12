@@ -6,6 +6,8 @@ import bms_utils
 from datetime import datetime, timedelta
 from collections import OrderedDict
 from os import path, makedirs
+
+import yaml
 from std_srvs.srv import Trigger
 from eurobench_bms_msgs_and_srvs.srv import StartRecording, StartRecordingRequest
 from benchmark_scripts.testbed_comm.madrob_testbed_comm import MadrobTestbedComm
@@ -58,7 +60,6 @@ class Benchmark(object):
         self.result = None
         self.robot_name = None
         self.run_number = None
-        self.testbed_conf_path = None
 
     def setup(self, robot_name, run_number, live_benchmark, testbed_conf):
         self.terminated = False
@@ -109,6 +110,8 @@ class Benchmark(object):
         benchmark_results_dir = path.join(self.output_dir, benchmark_id)
         makedirs(benchmark_results_dir)
 
+        testbed_conf_path = path.join(benchmark_results_dir, '%s_testbed.yaml' % str(self.benchmark_group).lower())
+
         if self.live_benchmark:
             # Setup testbed
             self.testbed_comm.setup_testbed()
@@ -117,8 +120,7 @@ class Benchmark(object):
             rosbag_filepath = path.join(benchmark_results_dir, '%s.bag' % benchmark_id)
 
             # Save testbed config yaml file, including rosbag filepath
-            self.testbed_conf_path = path.join(benchmark_results_dir, '%s.yaml' % benchmark_id)
-            self.testbed_conf = self.testbed_comm.write_testbed_conf_file(self.testbed_conf_path, self.start_time_ros, self.robot_name, self.run_number, rosbag_filepath)
+            self.testbed_conf = self.testbed_comm.write_testbed_conf_file(testbed_conf_path, self.start_time_ros, self.robot_name, self.run_number, rosbag_filepath)
 
             # Start recording rosbag
             request = StartRecordingRequest()
@@ -134,13 +136,13 @@ class Benchmark(object):
             if not response.success:
                 rospy.logerr('Could not start recording rosbag')
                 return
-
-        # Create a dir for preprocessed files
-        preprocess_dir = path.join(benchmark_results_dir, 'preprocessed')
-        makedirs(preprocess_dir)
+        else:
+            # if this is a run from bag, save the testbed config as-is to the output dir
+            with open(testbed_conf_path, 'w') as file:
+                yaml.dump(self.testbed_conf, file, default_flow_style=False)
 
         # Start preprocessing scripts
-        self.preprocess.start(self.robot_name, self.run_number, self.start_time, self.testbed_conf, self.live_benchmark, preprocess_dir)
+        self.preprocess.start(self.robot_name, self.run_number, self.start_time, self.testbed_conf, self.live_benchmark, benchmark_results_dir)
 
         # Loop while benchmark is running
         while not self.terminated:
@@ -155,12 +157,12 @@ class Benchmark(object):
             if not response.success:
                 rospy.logerr('Could not stop recording rosbag')
 
-        # Create a dir for PI result files
-        performance_dir = path.join(benchmark_results_dir, 'performance')
-        makedirs(performance_dir)
-
         # Calculate PIs - Run all pre-processing scripts
         if madrob_beast_pi is not None:
+            # Create a dir for PI result files
+            performance_dir = path.join(benchmark_results_dir, 'performance')
+            makedirs(performance_dir)
+
             for performance_indicator_module in self.performance_indicators:
                 pi = globals()[performance_indicator_module].performance_indicator
 
