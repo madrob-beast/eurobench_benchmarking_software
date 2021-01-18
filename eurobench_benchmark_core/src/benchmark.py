@@ -14,15 +14,6 @@ from benchmark_scripts.testbed_comm.madrob_testbed_comm import MadrobTestbedComm
 from benchmark_scripts.testbed_comm.beast_testbed_comm import BeastTestbedComm
 from benchmark_scripts.preprocess.preprocess import Preprocess
 
-try:
-    import madrob_beast_pi.madrob
-    from madrob_beast_pi.madrob import *
-    import madrob_beast_pi.beast
-    from madrob_beast_pi.beast import *
-except ImportError:
-    madrob_beast_pi = None
-    rospy.logerr("could not import performance indicator scripts")
-
 
 class Benchmark(object):
     def __init__(self, benchmark_group, config):
@@ -46,27 +37,23 @@ class Benchmark(object):
         if benchmark_group == 'BEAST':
             self.testbed_comm = BeastTestbedComm()
 
-        if madrob_beast_pi is not None:
-            if benchmark_group == 'MADROB':
-                self.performance_indicators = madrob_beast_pi.madrob.__all__
-            if benchmark_group == 'BEAST':
-                self.performance_indicators = madrob_beast_pi.beast.__all__
-
         self.terminated = None
         self.live_benchmark = None
         self.testbed_conf = None
+        self.original_testbed_conf_path = None
         self.start_time = None
         self.start_time_ros = None
         self.result = None
         self.robot_name = None
         self.run_number = None
 
-    def setup(self, robot_name, run_number, live_benchmark, testbed_conf):
+    def setup(self, robot_name, run_number, live_benchmark, testbed_conf, testbed_conf_path):
         self.terminated = False
         self.robot_name = robot_name
         self.run_number = run_number
         self.live_benchmark = live_benchmark
-        self.testbed_conf = testbed_conf
+        self.testbed_conf = testbed_conf  # self.testbed_conf is the path of the testbed config associated to a rosbag (live_benchmark is False), otherwise self.testbed_conf will be None
+        self.original_testbed_conf_path = testbed_conf_path
         self.start_time = datetime.now() + timedelta(seconds=rospy.get_param('benchmark_countdown'))
         self.start_time_ros = rospy.Time.now() + rospy.Duration(rospy.get_param('benchmark_countdown'))
 
@@ -138,36 +125,24 @@ class Benchmark(object):
                 return
         else:
             # if this is a run from bag, save the testbed config as-is to the output dir
-            with open(testbed_conf_path, 'w') as file:
-                yaml.dump(self.testbed_conf, file, default_flow_style=False)
+            with open(testbed_conf_path, 'w') as testbed_conf_file:
+                yaml.dump(self.testbed_conf, testbed_conf_file, default_flow_style=False)
 
         # Start preprocessing scripts
-        self.preprocess.start(self.robot_name, self.run_number, self.start_time, self.testbed_conf, self.live_benchmark, benchmark_results_dir)
+        preprocess_ret = self.preprocess.start(self.robot_name, self.run_number, self.start_time, self.testbed_conf, self.original_testbed_conf_path, self.live_benchmark, benchmark_results_dir)
 
-        # Loop while benchmark is running
-        while not self.terminated:
-            rospy.sleep(0.1)
+        if preprocess_ret:
+            # Loop while benchmark is running
+            while not self.terminated:
+                rospy.sleep(0.1)
+        else:
+            rospy.logerr("could not start execution of the benchmark")
 
         # Stop preprocessing
-        preprocessed_filenames_dict = self.preprocess.finish()
+        self.preprocess.finish()
 
         if self.live_benchmark:
             # Stop recording
             response = self.stop_recording_service()
             if not response.success:
                 rospy.logerr('Could not stop recording rosbag')
-
-        # Calculate PIs - Run all pre-processing scripts
-        if madrob_beast_pi is not None:
-            # Create a dir for PI result files
-            performance_dir = path.join(benchmark_results_dir, 'performance')
-            makedirs(performance_dir)
-
-            for performance_indicator_module in self.performance_indicators:
-                pi = globals()[performance_indicator_module].performance_indicator
-
-                try:
-                    pi(preprocessed_filenames_dict, self.testbed_conf, performance_dir, self.start_time)
-                except Exception as e:
-                    rospy.logerr("Error in performance indicator: {pi_name}, Type: {ex_type}, Value: {ex_val}".format(pi_name=performance_indicator_module, ex_type=str(type(e)), ex_val=str(e)))
-                    continue

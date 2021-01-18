@@ -41,11 +41,14 @@ class BenchmarkCore(object):
         benchmark = Benchmark(self.benchmark_group, self.config)
 
         testbed_conf = None
+        testbed_conf_path = None
         if not request.live_benchmark:
-            testbed_conf = yaml.load(request.testbed_conf, Loader=yaml.FullLoader)
+            testbed_conf_path = request.testbed_conf
+            with open(testbed_conf_path, 'r') as testbed_conf_file:
+                testbed_conf = yaml.load(testbed_conf_file, Loader=yaml.FullLoader)
 
-        benchmark.setup(request.robot_name, request.run_number, request.live_benchmark, testbed_conf)
-        
+        benchmark.setup(request.robot_name, request.run_number, request.live_benchmark, testbed_conf, testbed_conf_path)
+
         self.current_benchmark = benchmark
 
         rospy.loginfo('\n---\n STARTING BENCHMARK: %s | Robot name: %s | Run %d\n---' %

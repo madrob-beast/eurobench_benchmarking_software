@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import traceback
+from os import path
 
 import rospy
 from std_srvs.srv import Trigger
@@ -27,7 +28,7 @@ class Preprocess(object):
         self.running_preprocess_scripts = []
         self.preprocessed_files = {}
 
-    def start(self, robot_name, run_number, start_time, testbed_conf, live_benchmark, preprocess_dir):
+    def start(self, robot_name, run_number, start_time, testbed_conf, testbed_conf_path, live_benchmark, preprocess_dir):
         if not live_benchmark:
             # Not live, rosbag needs to be played.
 
@@ -43,15 +44,24 @@ class Preprocess(object):
             # Play rosbag
             play_rosbag_service = rospy.ServiceProxy('/eurobench_rosbag_controller/play_rosbag', PlayRosbag)
 
-            rosbag_path = testbed_conf['Rosbag path']
+            rosbag_relative_path = testbed_conf['Rosbag path']
+            rosbag_path = path.abspath(path.join(path.dirname(testbed_conf_path), rosbag_relative_path))
 
             play_rosbag_request = PlayRosbagRequest()
             play_rosbag_request.rosbag_filepath = rosbag_path
             play_rosbag_request.topic_remappings = topic_remappings
 
-            play_rosbag_service(play_rosbag_request)
+            try:
+                play_rosbag_service_response = play_rosbag_service(play_rosbag_request)
+            except rospy.ServiceException as e:
+                rospy.logfatal(traceback.format_exc())
+                return False
+
+            if not play_rosbag_service_response.success:
+                return False
+
             self.playing_rosbag = True
-            
+
         for preprocess_module in self.preprocess_scripts:
             # noinspection PyBroadException
             try:
@@ -70,6 +80,7 @@ class Preprocess(object):
                 rospy.logerr("failed to initialise preprocess script {name} due to exception: {exception}".format(name=preprocess_module, exception=traceback.format_exc()))
 
         self.saving_data = True
+        return True
     
     def finish(self):
         for preprocess in self.running_preprocess_scripts:

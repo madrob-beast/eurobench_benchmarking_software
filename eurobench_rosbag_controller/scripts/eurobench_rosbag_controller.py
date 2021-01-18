@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import traceback
+from os import path
 
 import rospy
 import rosnode
@@ -67,7 +69,21 @@ class RosbagController():
         rosbag_filepath = req.rosbag_filepath
         topic_remappings = req.topic_remappings
 
-        bag = rosbag.Bag(rosbag_filepath)
+        if not path.exists(rosbag_filepath):
+            rospy.logfatal("Could not open rosbag: file does not exists")
+            return PlayRosbagResponse(False)
+
+        if not path.isfile(rosbag_filepath):
+            rospy.logfatal("Could not open rosbag: rosbag path is not a file")
+            return PlayRosbagResponse(False)
+
+        try:
+            bag = rosbag.Bag(rosbag_filepath)
+        except (ValueError, rosbag.ROSBagException, rosbag.ROSBagFormatException):
+            rospy.logfatal("Could not open rosbag")
+            rospy.logerr(traceback.format_exc())
+            return PlayRosbagResponse(False)
+
         topics = bag.get_type_and_topic_info()[1].keys()
 
         remaps = []
