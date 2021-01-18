@@ -34,7 +34,7 @@ class Benchmark(object):
 
         if benchmark_group == 'MADROB':
             self.testbed_comm = MadrobTestbedComm(self.config['benchmarks'])
-        if benchmark_group == 'BEAST':
+        elif benchmark_group == 'BEAST':
             self.testbed_comm = BeastTestbedComm()
 
         self.terminated = None
@@ -52,7 +52,7 @@ class Benchmark(object):
         self.robot_name = robot_name
         self.run_number = run_number
         self.live_benchmark = live_benchmark
-        self.testbed_conf = testbed_conf  # self.testbed_conf is the path of the testbed config associated to a rosbag (live_benchmark is False), otherwise self.testbed_conf will be None
+        self.testbed_conf = testbed_conf  # self.testbed_conf is the testbed config associated to a rosbag (live_benchmark is False), otherwise self.testbed_conf will be None
         self.original_testbed_conf_path = testbed_conf_path
         self.start_time = datetime.now() + timedelta(seconds=rospy.get_param('benchmark_countdown'))
         self.start_time_ros = rospy.Time.now() + rospy.Duration(rospy.get_param('benchmark_countdown'))
@@ -60,8 +60,8 @@ class Benchmark(object):
         self.result = {}
 
         if not self.live_benchmark:
-            self.robot_name = self.testbed_conf['Robot name']
-            self.run_number = self.testbed_conf['Run number']
+            self.robot_name = self.testbed_conf['robot_name']
+            self.run_number = self.testbed_conf['run_number']
 
     def get_benchmark_info(self):
         benchmark_info = OrderedDict([

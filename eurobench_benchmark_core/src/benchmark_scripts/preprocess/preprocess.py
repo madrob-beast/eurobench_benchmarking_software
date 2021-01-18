@@ -44,7 +44,7 @@ class Preprocess(object):
             # Play rosbag
             play_rosbag_service = rospy.ServiceProxy('/eurobench_rosbag_controller/play_rosbag', PlayRosbag)
 
-            rosbag_relative_path = testbed_conf['Rosbag path']
+            rosbag_relative_path = testbed_conf['rosbag_path']
             rosbag_path = path.abspath(path.join(path.dirname(testbed_conf_path), rosbag_relative_path))
 
             play_rosbag_request = PlayRosbagRequest()
@@ -65,13 +65,13 @@ class Preprocess(object):
         for preprocess_module in self.preprocess_scripts:
             # noinspection PyBroadException
             try:
-                preprocess = globals()[preprocess_module].PreprocessObject()
-                self.running_preprocess_scripts.append(preprocess)
+                preprocess_module_obj = globals()[preprocess_module].PreprocessObject()
+                self.running_preprocess_scripts.append(preprocess_module_obj)
                 rospy.loginfo("preprocess script initialised: {name}".format(name=preprocess_module))
 
                 # noinspection PyBroadException
                 try:
-                    preprocess.start(self.benchmark_group, robot_name, run_number, start_time, testbed_conf, preprocess_dir)
+                    preprocess_module_obj.start(self.benchmark_group, robot_name, run_number, start_time, testbed_conf, preprocess_dir)
                     rospy.loginfo("preprocess script started: {name}".format(name=preprocess_module))
                 except Exception:
                     rospy.logerr("failed to start preprocess script {name} due to exception: {exception}".format(name=preprocess_module, exception=traceback.format_exc()))
