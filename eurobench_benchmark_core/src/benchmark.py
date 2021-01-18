@@ -104,10 +104,11 @@ class Benchmark(object):
             self.testbed_comm.setup_testbed()
 
             # File name and path of rosbag
-            rosbag_filepath = path.join(benchmark_results_dir, '%s.bag' % benchmark_id)
+            rosbag_filename = '%s.bag' % benchmark_id
+            rosbag_filepath = path.join(benchmark_results_dir, rosbag_filename)
 
             # Save testbed config yaml file, including rosbag filepath
-            self.testbed_conf = self.testbed_comm.write_testbed_conf_file(testbed_conf_path, self.start_time_ros, self.robot_name, self.run_number, rosbag_filepath)
+            self.testbed_conf = self.testbed_comm.write_testbed_conf_file(testbed_conf_path, self.start_time_ros, self.robot_name, self.run_number, rosbag_filename)
 
             # Start recording rosbag
             request = StartRecordingRequest()
