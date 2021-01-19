@@ -28,7 +28,7 @@ class Preprocess(object):
         self.running_preprocess_scripts = []
         self.preprocessed_files = {}
 
-    def start(self, robot_name, run_number, start_time, testbed_conf, testbed_conf_path, live_benchmark, preprocess_dir):
+    def start(self, robot_name, condition_number, run_number, start_time, testbed_conf, testbed_conf_path, live_benchmark, preprocess_dir):
         if not live_benchmark:
             # Not live, rosbag needs to be played.
 
@@ -71,7 +71,7 @@ class Preprocess(object):
 
                 # noinspection PyBroadException
                 try:
-                    preprocess_module_obj.start(self.benchmark_group, robot_name, run_number, start_time, testbed_conf, preprocess_dir)
+                    preprocess_module_obj.start(self.benchmark_group, robot_name, condition_number, run_number, start_time, testbed_conf, preprocess_dir)
                     rospy.loginfo("preprocess script started: {name}".format(name=preprocess_module))
                 except Exception:
                     rospy.logerr("failed to start preprocess script {name} due to exception: {exception}".format(name=preprocess_module, exception=traceback.format_exc()))

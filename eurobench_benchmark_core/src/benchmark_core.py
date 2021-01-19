@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import glob
 
 import rospy
 import yaml
@@ -107,7 +108,6 @@ class BenchmarkCore(object):
 
     def execute_benchmark(self):
         self.current_benchmark.execute()
-        # self.current_benchmark.save_result()
 
         rospy.loginfo('\n---\n BENCHMARK FINISHED: %s | Robot name: %s \n---' %
                       (self.benchmark_group, self.current_benchmark.robot_name))

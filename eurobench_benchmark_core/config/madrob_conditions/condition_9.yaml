@@ -1,0 +1,3 @@
+benchmark_type: Sudden Ramp
+door_opening_side: CW
+robot_approach_side: CCW

@@ -1,3 +1,6 @@
+import glob
+from os import path
+
 import rospy
 
 from eurobench_bms_msgs_and_srvs.srv import *
@@ -12,6 +15,8 @@ class MadrobTestbedComm(object):
 
         self.current_benchmark_name = None
         self.current_benchmark_type = None
+        # self.conditions_table = None
+        # self.conditions_path_table = None
 
         self.stop_benchmark = rospy.ServiceProxy('bmcore/stop_benchmark', StopBenchmark)
 
@@ -19,6 +24,7 @@ class MadrobTestbedComm(object):
         self.robot_approach_side = None
 
     def setup_testbed(self):
+
         # Based on the currently selected benchmark type, set the brake_enabled and LUT values
         get_benchmark_params = rospy.ServiceProxy('madrob/gui/benchmark_params', MadrobBenchmarkParams)
         response = get_benchmark_params()
@@ -78,21 +84,17 @@ class MadrobTestbedComm(object):
             else:
                 rospy.logerr('Error setting CCW door LUT: %s' % ccw_door_lut_response.message)
 
-    def write_testbed_conf_file(self, filepath, start_time_ros, robot_name, run_number, rosbag_filepath):
+    def get_testbed_conf_file(self, start_time_ros, robot_name, run_number):
         testbed_params = dict()
 
         testbed_params['start_time'] = start_time_ros.to_sec()
         testbed_params['robot_name'] = robot_name
         testbed_params['run_number'] = run_number
-        testbed_params['rosbag_path'] = rosbag_filepath
         testbed_params['benchmark_type'] = self.current_benchmark_name
         testbed_params['door_controller_mode'] = SetDoorControllerModeRequest.MODE_LUT if self.current_benchmark_type['brake_enabled'] else SetDoorControllerModeRequest.MODE_DISABLED
         testbed_params['LUTcw'] = self.current_benchmark_type['lut']
         testbed_params['LUTccw'] = list(reversed(self.current_benchmark_type['lut']))
         testbed_params['door_opening_side'] = self.door_opening_side
         testbed_params['robot_approach_side'] = self.robot_approach_side
-
-        with open(filepath, 'w') as f:
-            yaml.dump(testbed_params, f, default_flow_style=False)
 
         return testbed_params

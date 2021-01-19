@@ -18,8 +18,7 @@ class madrob_settings_gui(Plugin):
 
         self._widget = QWidget()
 
-        ui_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                               'madrob_settings_gui.ui')
+        ui_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'madrob_settings_gui.ui')
 
         loadUi(ui_file, self._widget)
 
@@ -61,6 +60,9 @@ class madrob_settings_gui(Plugin):
         self.door_opening_side_combo.addItems(['CW', 'CCW'])
         self.robot_approach_side_combo.addItems(['CW', 'CCW'])
 
+        self.door_node_name = None
+        self.handle_node_name = None
+
         # Every second, check for MADROB's settings from the core
         self.benchmark_types_set = False
         rospy.Timer(rospy.Duration(1), self.check_madrob_settings)
@@ -77,7 +79,7 @@ class madrob_settings_gui(Plugin):
                 self.benchmark_type_combo.addItems(madrob_settings.benchmark_types)
                 self.benchmark_types_set = True
             except rospy.ServiceException:
-                pass # Core not available yet
+                pass  # Core not available yet
 
     def shutdown_plugin(self):
         # TODO unregister all publishers here
@@ -127,7 +129,7 @@ class madrob_settings_gui(Plugin):
         if calibrate_handle_res.success:
             rospy.loginfo('Loadcell CW calibrated')
         else:
-            rospy.logerr('Could not calibrate loadcell CW: %s' % (calibrate_handle_res.message))
+            rospy.logerr('Could not calibrate loadcell CW: %s' % calibrate_handle_res.message)
 
     def calibrate_loadcell_ccw(self):
         try:
@@ -154,7 +156,7 @@ class madrob_settings_gui(Plugin):
         if calibrate_handle_res.success:
             rospy.loginfo('Loadcell CCW calibrated')
         else:
-            rospy.logerr('Could not calibrate loadcell CCW: %s' % (calibrate_handle_res.message))
+            rospy.logerr('Could not calibrate loadcell CCW: %s' % calibrate_handle_res.message)
 
     def start_motor_calibration(self):
         # TODO start motor calibration procedure
@@ -184,19 +186,16 @@ class madrob_settings_gui(Plugin):
         
         calibrate_position_res = calibrate_position(calibrate_position_req)
         if calibrate_position_res.success:
-            rospy.loginfo('Door encoder calibrated. Position: %d' % (position))
+            rospy.loginfo('Door encoder calibrated. Position: %d' % position)
         else:
-            rospy.logerr('Could not calibrate door encoder. Position: %d' % (position))
-            
+            rospy.logerr('Could not calibrate door encoder. Position: %d' % position)
 
     def run_rospy_node(self):
-        self.benchmark_params_service = rospy.Service(
-            'madrob/gui/benchmark_params', MadrobBenchmarkParams, self.benchmark_params_callback)
-
+        rospy.Service('madrob/gui/benchmark_params', MadrobBenchmarkParams, self.benchmark_params_callback)
         self.door_node_name = rospy.get_param('testbed_nodes')['door']
         self.handle_node_name = rospy.get_param('testbed_nodes')['handle']
 
-    def benchmark_params_callback(self, request):
+    def benchmark_params_callback(self, _):
         benchmark_params_response = MadrobBenchmarkParamsResponse()
         benchmark_params_response.benchmark_type = self.benchmark_type_combo.currentText()
         benchmark_params_response.door_opening_side = self.door_opening_side_combo.currentText()

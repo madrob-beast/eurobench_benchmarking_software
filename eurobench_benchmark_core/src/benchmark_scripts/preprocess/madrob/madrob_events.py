@@ -13,7 +13,7 @@ import numpy as np
 
 class PreprocessObject(BasePreprocess):
     def __init__(self):
-        super(PreprocessObject, self).__init__(data_format_name="events")
+        super(PreprocessObject, self).__init__(data_format_name="event")
 
         # Passage sensors values (a subset of the total number of sensors available from the testbed).
         self.cw_num_sensors = 5
@@ -89,8 +89,9 @@ class PreprocessObject(BasePreprocess):
         # Enable visualisation of passage sensors and door closing/opening events in the terminal.
         self.print_debug_info = False
 
-    def start(self, benchmark_group, robot_name, run_number, start_time, testbed_conf, preprocess_dir):
+    def start(self, benchmark_group, robot_name, condition_number, run_number, start_time, testbed_conf, preprocess_dir):
         self.robot_name = robot_name
+        self.condition_number = condition_number
         self.run_number = run_number
         self.preprocess_dir = preprocess_dir
 
