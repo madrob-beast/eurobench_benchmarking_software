@@ -1,22 +1,30 @@
+import glob
+from os import path
+
 import rospy
 
 from eurobench_bms_msgs_and_srvs.srv import *
 from madrob_srvs.srv import *
-from collections import OrderedDict
-from benchmark_scripts.testbed_comm.base_testbed_comm import BaseTestbedComm
 import yaml
 
-class MadrobTestbedComm(BaseTestbedComm):
+
+class MadrobTestbedComm(object):
 
     def __init__(self, config):
         self.config = config
 
         self.current_benchmark_name = None
         self.current_benchmark_type = None
+        # self.conditions_table = None
+        # self.conditions_path_table = None
 
         self.stop_benchmark = rospy.ServiceProxy('bmcore/stop_benchmark', StopBenchmark)
 
+        self.door_opening_side = None
+        self.robot_approach_side = None
+
     def setup_testbed(self):
+
         # Based on the currently selected benchmark type, set the brake_enabled and LUT values
         get_benchmark_params = rospy.ServiceProxy('madrob/gui/benchmark_params', MadrobBenchmarkParams)
         response = get_benchmark_params()
@@ -48,7 +56,7 @@ class MadrobTestbedComm(BaseTestbedComm):
         if door_mode_response.success:
             rospy.loginfo('Door controller mode successfully set')
         else:
-            rospy.logerr('Error setting door controller mode: %s' % (door_mode_response.message))
+            rospy.logerr('Error setting door controller mode: %s' % door_mode_response.message)
         
         # lutCCW has reverse order
         lut = self.current_benchmark_type['lut']
@@ -65,7 +73,7 @@ class MadrobTestbedComm(BaseTestbedComm):
             if cw_door_lut_response.success:
                 rospy.loginfo('CW door LUT successfully set')
             else:
-                rospy.logerr('Error setting CW door LUT: %s' % (cw_door_lut_response.message))
+                rospy.logerr('Error setting CW door LUT: %s' % cw_door_lut_response.message)
 
             ccw_door_lut_request = SetDoorControllerLUTRequest()
             ccw_door_lut_request.type = SetDoorControllerLUTRequest.ANGLE_CCW
@@ -74,23 +82,19 @@ class MadrobTestbedComm(BaseTestbedComm):
             if ccw_door_lut_response.success:
                 rospy.loginfo('CCW door LUT successfully set')
             else:
-                rospy.logerr('Error setting CCW door LUT: %s' % (ccw_door_lut_response.message))
+                rospy.logerr('Error setting CCW door LUT: %s' % ccw_door_lut_response.message)
 
-    def write_testbed_conf_file(self, filepath, start_time_ros, robot_name, run_number, rosbag_filepath):
-        testbed_params = {}
+    def get_testbed_conf_file(self, start_time_ros, robot_name, run_number):
+        testbed_params = dict()
 
-        testbed_params['Start time'] = '%d.%d' % (start_time_ros.secs, start_time_ros.nsecs)
-        testbed_params['Robot name'] = robot_name
-        testbed_params['Run number'] = run_number
-        testbed_params['Rosbag path'] = rosbag_filepath
-        testbed_params['Benchmark type'] = self.current_benchmark_name
-        testbed_params['Door controller mode'] = SetDoorControllerModeRequest.MODE_LUT if self.current_benchmark_type['brake_enabled'] else SetDoorControllerModeRequest.MODE_DISABLED
+        testbed_params['start_time'] = start_time_ros.to_sec()
+        testbed_params['robot_name'] = robot_name
+        testbed_params['run_number'] = run_number
+        testbed_params['benchmark_type'] = self.current_benchmark_name
+        testbed_params['door_controller_mode'] = SetDoorControllerModeRequest.MODE_LUT if self.current_benchmark_type['brake_enabled'] else SetDoorControllerModeRequest.MODE_DISABLED
         testbed_params['LUTcw'] = self.current_benchmark_type['lut']
         testbed_params['LUTccw'] = list(reversed(self.current_benchmark_type['lut']))
-        testbed_params['Door opening side'] = self.door_opening_side
-        testbed_params['Robot approach side'] = self.robot_approach_side
-
-        with open(filepath, 'w') as file:
-            yaml.dump(testbed_params, file, default_flow_style=False)
+        testbed_params['door_opening_side'] = self.door_opening_side
+        testbed_params['robot_approach_side'] = self.robot_approach_side
 
         return testbed_params

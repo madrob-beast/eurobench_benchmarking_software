@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import glob
 
 import rospy
 import json
@@ -6,6 +7,7 @@ import bms_utils
 from datetime import datetime, timedelta
 from collections import OrderedDict
 from os import path, makedirs
+from shutil import copyfile
 
 import yaml
 from std_srvs.srv import Trigger
@@ -13,15 +15,6 @@ from eurobench_bms_msgs_and_srvs.srv import StartRecording, StartRecordingReques
 from benchmark_scripts.testbed_comm.madrob_testbed_comm import MadrobTestbedComm
 from benchmark_scripts.testbed_comm.beast_testbed_comm import BeastTestbedComm
 from benchmark_scripts.preprocess.preprocess import Preprocess
-
-try:
-    import madrob_beast_pi.madrob
-    from madrob_beast_pi.madrob import *
-    import madrob_beast_pi.beast
-    from madrob_beast_pi.beast import *
-except ImportError:
-    madrob_beast_pi = None
-    rospy.logerr("could not import performance indicator scripts")
 
 
 class Benchmark(object):
@@ -43,38 +36,34 @@ class Benchmark(object):
 
         if benchmark_group == 'MADROB':
             self.testbed_comm = MadrobTestbedComm(self.config['benchmarks'])
-        if benchmark_group == 'BEAST':
+        elif benchmark_group == 'BEAST':
             self.testbed_comm = BeastTestbedComm()
-
-        if madrob_beast_pi is not None:
-            if benchmark_group == 'MADROB':
-                self.performance_indicators = madrob_beast_pi.madrob.__all__
-            if benchmark_group == 'BEAST':
-                self.performance_indicators = madrob_beast_pi.beast.__all__
 
         self.terminated = None
         self.live_benchmark = None
         self.testbed_conf = None
+        self.original_testbed_conf_path = None
         self.start_time = None
         self.start_time_ros = None
         self.result = None
         self.robot_name = None
         self.run_number = None
 
-    def setup(self, robot_name, run_number, live_benchmark, testbed_conf):
+    def setup(self, robot_name, run_number, live_benchmark, testbed_conf, testbed_conf_path):
         self.terminated = False
         self.robot_name = robot_name
         self.run_number = run_number
         self.live_benchmark = live_benchmark
-        self.testbed_conf = testbed_conf
+        self.testbed_conf = testbed_conf  # self.testbed_conf is the testbed config associated to a rosbag (live_benchmark is False), otherwise self.testbed_conf will be None
+        self.original_testbed_conf_path = testbed_conf_path
         self.start_time = datetime.now() + timedelta(seconds=rospy.get_param('benchmark_countdown'))
         self.start_time_ros = rospy.Time.now() + rospy.Duration(rospy.get_param('benchmark_countdown'))
 
         self.result = {}
 
         if not self.live_benchmark:
-            self.robot_name = self.testbed_conf['Robot name']
-            self.run_number = self.testbed_conf['Run number']
+            self.robot_name = self.testbed_conf['robot_name']
+            self.run_number = self.testbed_conf['run_number']
 
     def get_benchmark_info(self):
         benchmark_info = OrderedDict([
@@ -87,40 +76,55 @@ class Benchmark(object):
 
         return json.dumps(benchmark_info, indent=2)
 
-    def save_result(self):
-        # If it doesn't exist, create directory with the robot's name
-        team_output_dir = path.join(self.output_dir, self.robot_name)
-        if not path.exists(team_output_dir):
-            makedirs(team_output_dir)
-
-        result_filename = path.join(team_output_dir, '%s_%s.txt' % (
-            self.benchmark_group, self.start_time.strftime('%Y-%m-%d_%H:%M:%S')))
-
-        with open(result_filename, 'w') as outfile:
-            outfile.write(self.get_benchmark_info())
-
-        rospy.loginfo('\nBENCHMARK RESULT:')
-        rospy.loginfo(self.get_benchmark_info() + '\n')
-
     def execute(self):
         start_time_str = self.start_time.strftime('%Y%m%d_%H%M%S')
-        benchmark_id = '%s_%s_%03d_%s' % (self.benchmark_group, self.robot_name, self.run_number, start_time_str)
-        
-        # Create a directory for this benchmark's files
-        benchmark_results_dir = path.join(self.output_dir, benchmark_id)
-        makedirs(benchmark_results_dir)
 
-        testbed_conf_path = path.join(benchmark_results_dir, '%s_testbed.yaml' % str(self.benchmark_group).lower())
+        madrob_conditions_path = rospy.get_param('~madrob_conditions_path')
+        conditions_table = dict()
+        conditions_path_table = dict()
+        for condition_path in glob.glob(path.join(madrob_conditions_path, 'condition_*.yaml')):
+            condition_number = int(path.basename(condition_path).replace("condition_", '').replace(".yaml", ''))
+            with open(condition_path) as condition_file:
+                condition = yaml.safe_load(condition_file)
+                conditions_table[(condition['benchmark_type'], condition['door_opening_side'], condition['robot_approach_side'])] = condition_number
+                conditions_path_table[(condition['benchmark_type'], condition['door_opening_side'], condition['robot_approach_side'])] = condition_path
 
         if self.live_benchmark:
             # Setup testbed
             self.testbed_comm.setup_testbed()
+            self.testbed_conf = self.testbed_comm.get_testbed_conf_file(self.start_time_ros, self.robot_name, self.run_number)
 
-            # File name and path of rosbag
-            rosbag_filepath = path.join(benchmark_results_dir, '%s.bag' % benchmark_id)
+            condition_number = conditions_table[(self.testbed_conf['benchmark_type'], self.testbed_conf['door_opening_side'], self.testbed_conf['robot_approach_side'])]
+            self.testbed_conf['condition_number'] = condition_number
+            condition_path = conditions_path_table[(self.testbed_conf['benchmark_type'], self.testbed_conf['door_opening_side'], self.testbed_conf['robot_approach_side'])]
 
-            # Save testbed config yaml file, including rosbag filepath
-            self.testbed_conf = self.testbed_comm.write_testbed_conf_file(testbed_conf_path, self.start_time_ros, self.robot_name, self.run_number, rosbag_filepath)
+            # make paths for directory and each file
+            benchmark_id = "subject_{subject_number:03d}_cond_{condition_number:03d}_run_{run_number:03d}_{t}".format(
+                subject_number=int(self.robot_name),
+                condition_number=condition_number,
+                run_number=self.run_number,
+                t=start_time_str)
+            benchmark_results_dir = path.join(self.output_dir, benchmark_id)
+            makedirs(benchmark_results_dir)
+
+            rosbag_filename = "subject_{subject_number:03d}_cond_{condition_number:03d}_run_{run_number:03d}_{t}.bag".format(
+                subject_number=int(self.robot_name),
+                condition_number=condition_number,
+                run_number=self.run_number,
+                t=start_time_str)
+            rosbag_filepath = path.join(benchmark_results_dir, rosbag_filename)
+            self.testbed_conf['rosbag_path'] = rosbag_filename
+
+            testbed_conf_path = path.join(benchmark_results_dir, 'run_info_subject_{subject_number:03d}_cond_{condition_number:03d}_run_{run_number:03d}.yaml'.format(
+                subject_number=int(self.robot_name),
+                condition_number=condition_number,
+                run_number=self.run_number,
+            ))
+
+            with open(testbed_conf_path, 'w') as testbed_conf_file:
+                yaml.dump(self.testbed_conf, testbed_conf_file, default_flow_style=False)
+
+            copyfile(condition_path, path.join(benchmark_results_dir, path.basename(condition_path)))
 
             # Start recording rosbag
             request = StartRecordingRequest()
@@ -137,37 +141,47 @@ class Benchmark(object):
                 rospy.logerr('Could not start recording rosbag')
                 return
         else:
-            # if this is a run from bag, save the testbed config as-is to the output dir
-            with open(testbed_conf_path, 'w') as file:
-                yaml.dump(self.testbed_conf, file, default_flow_style=False)
+            # if this is a run from bag the testbed configuration (self.testbed_conf) is the input to compute every other value
+
+            condition_number = conditions_table[(self.testbed_conf['benchmark_type'], self.testbed_conf['door_opening_side'], self.testbed_conf['robot_approach_side'])]
+            self.testbed_conf['condition_number'] = condition_number
+            condition_path = conditions_path_table[(self.testbed_conf['benchmark_type'], self.testbed_conf['door_opening_side'], self.testbed_conf['robot_approach_side'])]
+
+            # make paths for directory and each file
+            benchmark_id = "subject_{subject_number:03d}_cond_{condition_number:03d}_run_{run_number:03d}_{t}".format(
+                subject_number=int(self.robot_name),
+                condition_number=condition_number,
+                run_number=self.run_number,
+                t=start_time_str)
+            benchmark_results_dir = path.join(self.output_dir, benchmark_id)
+            makedirs(benchmark_results_dir)
+
+            testbed_conf_path = path.join(benchmark_results_dir, 'run_info_subject_{subject_number:03d}_cond_{condition_number:03d}_run_{run_number:03d}.yaml'.format(
+                subject_number=int(self.robot_name),
+                condition_number=condition_number,
+                run_number=self.run_number,
+            ))
+
+            with open(testbed_conf_path, 'w') as testbed_conf_file:
+                yaml.dump(self.testbed_conf, testbed_conf_file, default_flow_style=False)
+
+            copyfile(condition_path, path.join(benchmark_results_dir, path.basename(condition_path)))
 
         # Start preprocessing scripts
-        self.preprocess.start(self.robot_name, self.run_number, self.start_time, self.testbed_conf, self.live_benchmark, benchmark_results_dir)
+        preprocess_ret = self.preprocess.start(self.robot_name, condition_number, self.run_number, self.start_time, self.testbed_conf, self.original_testbed_conf_path, self.live_benchmark, benchmark_results_dir)
 
-        # Loop while benchmark is running
-        while not self.terminated:
-            rospy.sleep(0.1)
+        if preprocess_ret:
+            # Loop while benchmark is running
+            while not self.terminated:
+                rospy.sleep(0.1)
+        else:
+            rospy.logerr("could not start execution of the benchmark")
 
         # Stop preprocessing
-        preprocessed_filenames_dict = self.preprocess.finish()
+        self.preprocess.finish()
 
         if self.live_benchmark:
             # Stop recording
             response = self.stop_recording_service()
             if not response.success:
                 rospy.logerr('Could not stop recording rosbag')
-
-        # Calculate PIs - Run all pre-processing scripts
-        if madrob_beast_pi is not None:
-            # Create a dir for PI result files
-            performance_dir = path.join(benchmark_results_dir, 'performance')
-            makedirs(performance_dir)
-
-            for performance_indicator_module in self.performance_indicators:
-                pi = globals()[performance_indicator_module].performance_indicator
-
-                try:
-                    pi(preprocessed_filenames_dict, self.testbed_conf, performance_dir, self.start_time)
-                except Exception as e:
-                    rospy.logerr("Error in performance indicator: {pi_name}, Type: {ex_type}, Value: {ex_val}".format(pi_name=performance_indicator_module, ex_type=str(type(e)), ex_val=str(e)))
-                    continue

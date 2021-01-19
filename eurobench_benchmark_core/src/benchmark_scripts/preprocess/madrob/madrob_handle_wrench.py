@@ -13,8 +13,9 @@ class PreprocessObject(BasePreprocess):
         self.handle_sub = None
         self.handle_force_list = None
 
-    def start(self, benchmark_group, robot_name, run_number, start_time, testbed_conf, preprocess_dir):
+    def start(self, benchmark_group, robot_name, condition_number, run_number, start_time, testbed_conf, preprocess_dir):
         self.robot_name = robot_name
+        self.condition_number = condition_number
         self.run_number = run_number
         self.preprocess_dir = preprocess_dir
 
