@@ -25,12 +25,16 @@ class beast_settings_gui(Plugin):
         self._widget.setObjectName('BEAST Settings')
         self._widget.setWindowTitle('BEAST Settings')
 
-        self.trolley_stiffness_combo = self._widget.findChild(QComboBox, 'trolley_stiffness_combo')
-        self.trolley_stiffness_combo.addItems(['0', '1', '2'])
+        self.disturbance_type_combo = self._widget.findChild(QComboBox, 'disturbance_type_combo')
+        self.disturbance_type_combo.addItems(['No Force', 'Small Pet'])
+        self.load_combo = self._widget.findChild(QComboBox, 'load_combo')
+        self.load_combo.addItems(['1500'])
+        self.start_already_gripping_combo = self._widget.findChild(QComboBox, 'start_already_gripping_combo')
+        self.start_already_gripping_combo.addItems(['False', 'True'])
 
         context.add_widget(self._widget)
 
-        self.run_rospy_node()
+        self.benchmark_params_service = rospy.Service('beast/gui/benchmark_params', BeastBenchmarkParams, self.benchmark_params_callback)
 
     def shutdown_plugin(self):
         # TODO unregister all publishers here
@@ -46,12 +50,10 @@ class beast_settings_gui(Plugin):
         # v = instance_settings.value(k)
         pass
 
-    def run_rospy_node(self):
-        self.benchmark_params_service = rospy.Service(
-            'beast/gui/benchmark_params', BeastBenchmarkParams, self.benchmark_params_callback)
-
     def benchmark_params_callback(self, request):
         benchmark_params_response = BeastBenchmarkParamsResponse()
-        benchmark_params_response.stiffness = int(self.trolley_stiffness_combo.currentText())
+        benchmark_params_response.disturbance_type = str(self.disturbance_type_combo.currentText())
+        benchmark_params_response.load = float(self.load_combo.currentText())
+        benchmark_params_response.start_already_gripping = bool(self.start_already_gripping_combo.currentText())
 
         return benchmark_params_response

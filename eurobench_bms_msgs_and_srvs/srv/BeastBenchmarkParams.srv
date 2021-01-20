@@ -1,2 +1,4 @@
 ---
-uint8 stiffness
+string disturbance_type
+bool start_already_gripping
+float32 load

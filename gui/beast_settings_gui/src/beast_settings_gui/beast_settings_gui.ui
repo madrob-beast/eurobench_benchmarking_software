@@ -16,33 +16,74 @@
   <property name="windowTitle">
    <string>beast_settings_gui</string>
   </property>
-  <widget class="QLabel" name="trolley_stiffness">
+  <widget class="QWidget" name="">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>50</y>
-     <width>141</width>
-     <height>21</height>
+     <y>10</y>
+     <width>461</width>
+     <height>95</height>
     </rect>
    </property>
-   <property name="font">
-    <font>
-     <pointsize>13</pointsize>
-    </font>
-   </property>
-   <property name="text">
-    <string>Trolley Stiffness</string>
-   </property>
-  </widget>
-  <widget class="QComboBox" name="trolley_stiffness_combo">
-   <property name="geometry">
-    <rect>
-     <x>148</x>
-     <y>48</y>
-     <width>71</width>
-     <height>27</height>
-    </rect>
-   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QLabel" name="disturbance_type">
+        <property name="font">
+         <font>
+          <pointsize>13</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Disturbance Type</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="disturbance_type_combo"/>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QLabel" name="load_label">
+        <property name="font">
+         <font>
+          <pointsize>13</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Load</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="load_combo"/>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <widget class="QLabel" name="start_already_gripping_label">
+        <property name="font">
+         <font>
+          <pointsize>13</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Start Already Gripping</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="start_already_gripping_combo"/>
+      </item>
+     </layout>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>
