@@ -192,6 +192,8 @@ class Benchmark(object):
             # Loop while benchmark is running
             while not self.terminated:
                 rospy.sleep(0.1)
+                if self.live_benchmark and self.benchmark_group == "BEAST":
+                    self.testbed_comm.keep_running()
         else:
             rospy.logerr("could not start execution of the benchmark")
 
@@ -199,6 +201,9 @@ class Benchmark(object):
         self.preprocess.finish()
 
         if self.live_benchmark:
+            if self.benchmark_group == "BEAST":
+                self.testbed_comm.stop()
+
             # Stop recording
             response = self.stop_recording_service()
             if not response.success:
