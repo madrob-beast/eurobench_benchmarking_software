@@ -5,7 +5,6 @@ from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
 from python_qt_binding.QtWidgets import QWidget, QComboBox
 
-from std_msgs.msg import UInt16
 from eurobench_bms_msgs_and_srvs.srv import *
 
 
@@ -50,10 +49,10 @@ class beast_settings_gui(Plugin):
         # v = instance_settings.value(k)
         pass
 
-    def benchmark_params_callback(self, request):
+    def benchmark_params_callback(self, _):
         benchmark_params_response = BeastBenchmarkParamsResponse()
         benchmark_params_response.disturbance_type = str(self.disturbance_type_combo.currentText())
         benchmark_params_response.load = float(self.load_combo.currentText())
-        benchmark_params_response.start_already_gripping = bool(self.start_already_gripping_combo.currentText())
+        benchmark_params_response.start_already_gripping = self.start_already_gripping_combo.currentText() == 'True'
 
         return benchmark_params_response

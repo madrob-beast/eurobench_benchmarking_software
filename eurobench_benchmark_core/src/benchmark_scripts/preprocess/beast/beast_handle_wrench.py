@@ -19,9 +19,8 @@ class PreprocessObject(BasePreprocess):
         self.run_number = run_number
         self.preprocess_dir = preprocess_dir
 
-        handle_node_name = rospy.get_param('testbed_nodes')['handle']
         self.handle_force_list = list()
-        self.handle_sub = rospy.Subscriber('/' + handle_node_name + '/state', Handle, self.handle_state_callback)
+        self.handle_sub = rospy.Subscriber("/handle", Handle, self.handle_state_callback)
 
     def finish(self):
         self.handle_sub.unregister()

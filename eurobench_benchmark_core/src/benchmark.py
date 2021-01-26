@@ -37,7 +37,7 @@ class Benchmark(object):
         if benchmark_group == 'MADROB':
             self.testbed_comm = MadrobTestbedComm(self.config['benchmarks'])
         elif benchmark_group == 'BEAST':
-            self.testbed_comm = BeastTestbedComm()
+            self.testbed_comm = BeastTestbedComm(self.config['benchmarks'])
 
         self.terminated = None
         self.live_benchmark = None
