@@ -11,6 +11,6 @@ benchmarks:
     id: 1
     mode: "disabled"
 
-  Small Pet:
+  Sudden Force:
     id: 2
     mode: "sudden_force"

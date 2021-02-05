@@ -25,9 +25,9 @@ class beast_settings_gui(Plugin):
         self._widget.setWindowTitle('BEAST Settings')
 
         self.disturbance_type_combo = self._widget.findChild(QComboBox, 'disturbance_type_combo')
-        self.disturbance_type_combo.addItems(['No Force', 'Small Pet'])
+        self.disturbance_type_combo.addItems(['No Force', 'Sudden Force'])
         self.load_combo = self._widget.findChild(QComboBox, 'load_combo')
-        self.load_combo.addItems(['1500'])
+        self.load_combo.addItems(['0', '9000'])
         self.start_already_gripping_combo = self._widget.findChild(QComboBox, 'start_already_gripping_combo')
         self.start_already_gripping_combo.addItems(['False', 'True'])
 
