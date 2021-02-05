@@ -11,4 +11,6 @@
     <param name="benchmark_group" value="BEAST" />
   </node>
 
+  <include file="$(find beast_scan_filter)/launch/beast_scan_filter.launch" />
+
 </launch>

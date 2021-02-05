@@ -20,7 +20,7 @@ class PreprocessObject(BasePreprocess):
         self.preprocess_dir = preprocess_dir
 
         self.handle_force_list = list()
-        self.handle_sub = rospy.Subscriber("/handle", Handle, self.handle_state_callback)
+        self.handle_sub = rospy.Subscriber("/beast_cart/handle", Handle, self.handle_state_callback)
 
     def finish(self):
         self.handle_sub.unregister()

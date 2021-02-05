@@ -6,7 +6,7 @@
 
   <maintainer email="95joaopereira@gmail.com">João Manuel Pereira</maintainer>
 
-  <license>TODO</license>
+  <license>MIT</license>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>

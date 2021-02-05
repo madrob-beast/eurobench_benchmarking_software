@@ -22,7 +22,7 @@ class PreprocessObject(BasePreprocess):
         self.preprocess_dir = preprocess_dir
 
         self.distance_list = list()
-        self.scan_sub = rospy.Subscriber('/scan', LaserScan, self.scan_callback)
+        self.scan_sub = rospy.Subscriber('/beast_cart/scan_filtered', LaserScan, self.scan_callback)
 
     def finish(self):
         self.scan_sub.unregister()
@@ -34,4 +34,4 @@ class PreprocessObject(BasePreprocess):
         return self.data_format_name, preprocess_file_path
 
     def scan_callback(self, scan_msg):
-        self.distance_list.append((scan_msg.header.stamp.to_sec(), np.min(scan_msg.ranges)))
+        self.distance_list.append((scan_msg.header.stamp.to_sec(), np.nanmin(scan_msg.ranges)))

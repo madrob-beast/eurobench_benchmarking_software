@@ -190,10 +190,11 @@ class Benchmark(object):
 
         if preprocess_ret:
             # Loop while benchmark is running
+            if self.benchmark_group == "BEAST":
+                self.testbed_comm.start()
+
             while not self.terminated:
                 rospy.sleep(0.1)
-                if self.live_benchmark and self.benchmark_group == "BEAST":
-                    self.testbed_comm.keep_running()
         else:
             rospy.logerr("could not start execution of the benchmark")
 

@@ -288,7 +288,7 @@ class BenchmarkGui(Plugin):
             self.rosbag_controller_available = False
 
         # Testbed
-        if(self.benchmark_group == 'MADROB'):
+        if self.benchmark_group == 'MADROB':
             door_node_name = rospy.get_param('testbed_nodes')['door']
             set_mode_service_name = '/' + door_node_name + '/set_mode'
 
@@ -298,12 +298,11 @@ class BenchmarkGui(Plugin):
             except rospy.ROSException:
                 self.testbed_node_available = False
 
-        if(self.benchmark_group == 'BEAST'):
-            trolley_node_name = rospy.get_param('testbed_nodes')['trolley']
-            set_stiffness_service_name = '/' + trolley_node_name + '/set_stiffness'
+        if self.benchmark_group == 'BEAST':
+            some_service_name = '/beast_cart/reset_encoders'
 
             try:
-                rospy.wait_for_service(set_stiffness_service_name, timeout=0.5)
+                rospy.wait_for_service(some_service_name, timeout=0.5)
                 self.testbed_node_available = True
             except rospy.ROSException:
                 self.testbed_node_available = False
