@@ -12,5 +12,7 @@
   </node>
 
   <include file="$(find beast_scan_filter)/launch/beast_scan_filter.launch" />
+  <include file="$(find beast_odometry_publisher)/launch/beast_odometry_publisher.launch" />
+  <include file="$(find beast_amcl)/launch/beast_amcl.launch" />
 
 </launch>
