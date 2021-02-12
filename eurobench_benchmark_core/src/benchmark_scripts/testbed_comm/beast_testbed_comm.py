@@ -1,6 +1,7 @@
 import numpy as np
 import rospy
-from std_msgs.msg import Float32
+from geometry_msgs.msg import PoseWithCovarianceStamped, PoseWithCovariance, Pose, Quaternion
+from std_msgs.msg import Float32, Header
 
 from beast_msgs.msg import Wheel
 from eurobench_bms_msgs_and_srvs.srv import *
@@ -18,6 +19,8 @@ class BeastTestbedComm(object):
         self.current_benchmark_type = None
 
         self.stop_benchmark = rospy.ServiceProxy('bmcore/stop_benchmark', StopBenchmark)
+
+        self.localization_pose_publisher = rospy.Publisher("/initialpose", PoseWithCovarianceStamped, queue_size=1)
 
         self.set_left_wheel_braking_mode = rospy.ServiceProxy("/beast_cart/left/set_wheel_braking_mode", SetWheelBrakingMode)
         self.set_right_wheel_braking_mode = rospy.ServiceProxy("/beast_cart/right/set_wheel_braking_mode", SetWheelBrakingMode)
@@ -54,6 +57,26 @@ class BeastTestbedComm(object):
         self.start_already_gripping = response.start_already_gripping
 
     def start(self):
+
+        # set the localization node's pose at the starting pose (origin of the map)
+        cov_mat = np.zeros((6, 6))
+        cov_mat[0, 0] = 0.1
+        cov_mat[1, 1] = 0.1
+        cov_mat[5, 5] = 0.068
+        initial_pose_msg = PoseWithCovarianceStamped(
+            header=Header(
+                stamp=rospy.Time.now(),
+                frame_id='map'
+            ),
+            pose=PoseWithCovariance(
+                pose=Pose(
+                    orientation=Quaternion(w=1.0)
+                ),
+                covariance=cov_mat.flatten()
+            )
+        )
+        self.localization_pose_publisher.publish(initial_pose_msg)
+
         # Set the braking mode to MODE_DISABLED with services
         wheel_braking_mode_disabled = SetWheelBrakingModeRequest(mode=SetWheelBrakingModeRequest.MODE_DISABLED)
         self.set_left_wheel_braking_mode(wheel_braking_mode_disabled)
