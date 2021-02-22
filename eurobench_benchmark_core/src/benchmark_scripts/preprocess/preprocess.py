@@ -32,14 +32,16 @@ class Preprocess(object):
         if not live_benchmark:
             # Not live, rosbag needs to be played.
 
-            # Remap node names, which will add a '_bag' suffix
-            testbed_nodes_dict = rospy.get_param('testbed_nodes')
-            topic_remappings = testbed_nodes_dict.values()
+            topic_remappings = list()
+            if self.benchmark_group == 'MADROB':
+                testbed_nodes_dict = rospy.get_param('testbed_nodes')
+                # Remap node names, which will add a '_bag' suffix
+                topic_remappings = testbed_nodes_dict.values()
 
-            # Temporarily change node names to the ones from the bag, so that live ones are ignored
-            for node, name in testbed_nodes_dict.items():
-                testbed_nodes_dict[node] = name + '_bag'
-            rospy.set_param('testbed_nodes', testbed_nodes_dict)
+                # Temporarily change node names to the ones from the bag, so that live ones are ignored
+                for node, name in testbed_nodes_dict.items():
+                    testbed_nodes_dict[node] = name + '_bag'
+                rospy.set_param('testbed_nodes', testbed_nodes_dict)
 
             # Play rosbag
             play_rosbag_service = rospy.ServiceProxy('/eurobench_rosbag_controller/play_rosbag', PlayRosbag)
@@ -71,7 +73,8 @@ class Preprocess(object):
 
                 # noinspection PyBroadException
                 try:
-                    preprocess_module_obj.start(self.benchmark_group, robot_name, condition_number, run_number, start_time, testbed_conf, preprocess_dir)
+                    preprocess_module_obj.start(self.benchmark_group, robot_name, condition_number, run_number, start_time, testbed_conf, preprocess_dir, live_benchmark)
+
                     rospy.loginfo("preprocess script started: {name}".format(name=preprocess_module))
                 except Exception:
                     rospy.logerr("failed to start preprocess script {name} due to exception: {exception}".format(name=preprocess_module, exception=traceback.format_exc()))
@@ -98,11 +101,13 @@ class Preprocess(object):
         self.running_preprocess_scripts = []
 
         if self.playing_rosbag:
-            # Remove '_bag' from node names
-            testbed_nodes_dict = rospy.get_param('testbed_nodes')
-            for node, name in testbed_nodes_dict.items():
-                testbed_nodes_dict[node] = name.replace('_bag', '')
-            rospy.set_param('testbed_nodes', testbed_nodes_dict)
+
+            if self.benchmark_group == 'MADROB':
+                # Remove '_bag' from node names
+                testbed_nodes_dict = rospy.get_param('testbed_nodes')
+                for node, name in testbed_nodes_dict.items():
+                    testbed_nodes_dict[node] = name.replace('_bag', '')
+                rospy.set_param('testbed_nodes', testbed_nodes_dict)
 
             stop_rosbag_service = rospy.ServiceProxy('/eurobench_rosbag_controller/stop_rosbag', Trigger)
             stop_rosbag_service()

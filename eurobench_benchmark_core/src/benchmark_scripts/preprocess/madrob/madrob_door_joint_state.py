@@ -20,7 +20,7 @@ class PreprocessObject(BasePreprocess):
         self.moving_average_width = None
         self.print_debug_info = False
 
-    def start(self, benchmark_group, robot_name, condition_number, run_number, start_time, testbed_conf, preprocess_dir):
+    def start(self, benchmark_group, robot_name, condition_number, run_number, start_time, testbed_conf, preprocess_dir, live_benchmark):
         self.robot_name = robot_name
         self.condition_number = condition_number
         self.run_number = run_number

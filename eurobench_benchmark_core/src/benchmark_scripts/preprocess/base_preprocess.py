@@ -13,7 +13,7 @@ class BasePreprocess(object):
         self.condition_number = None
         self.run_number = None
 
-    def start(self, benchmark_group, robot_name, condition_number, run_number, start_time, testbed_conf, preprocess_dir):
+    def start(self, benchmark_group, robot_name, condition_number, run_number, start_time, testbed_conf, preprocess_dir, live_benchmark):
         raise NotImplementedError()
 
     def finish(self):

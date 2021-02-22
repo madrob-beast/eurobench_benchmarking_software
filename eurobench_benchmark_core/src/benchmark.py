@@ -190,7 +190,7 @@ class Benchmark(object):
 
         if preprocess_ret:
             # Loop while benchmark is running
-            if self.benchmark_group == "BEAST":
+            if self.benchmark_group == "BEAST" and self.live_benchmark:
                 self.testbed_comm.start()
 
             while not self.terminated:

@@ -13,14 +13,20 @@ class PreprocessObject(BasePreprocess):
         self.handle_sub = None
         self.handle_force_list = None
 
-    def start(self, benchmark_group, robot_name, condition_number, run_number, start_time, testbed_conf, preprocess_dir):
+    def start(self, benchmark_group, robot_name, condition_number, run_number, start_time, testbed_conf, preprocess_dir, live_benchmark):
         self.robot_name = robot_name
         self.condition_number = condition_number
         self.run_number = run_number
         self.preprocess_dir = preprocess_dir
 
         self.handle_force_list = list()
-        self.handle_sub = rospy.Subscriber("/beast_cart/handle", Handle, self.handle_state_callback)
+
+        if live_benchmark:
+            input_topic_name = '/beast_cart/handle'
+        else:
+            input_topic_name = '/rosbag_replay/beast_cart/handle'
+
+        self.handle_sub = rospy.Subscriber(input_topic_name, Handle, self.handle_state_callback)
 
     def finish(self):
         self.handle_sub.unregister()

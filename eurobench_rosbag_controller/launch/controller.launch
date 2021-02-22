@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <launch>
-    <node name="eurobench_rosbag_controller" pkg="eurobench_rosbag_controller" type="eurobench_rosbag_controller.py" respawn="true" output="screen" />
+
+    <arg name="remap_all_topics" default="false" />
+
+    <node name="eurobench_rosbag_controller" pkg="eurobench_rosbag_controller" type="eurobench_rosbag_controller.py" respawn="true" output="screen" >
+        <param name="remap_all_topics" value="$(arg remap_all_topics)" type="bool" />
+    </node>
+
 </launch>
