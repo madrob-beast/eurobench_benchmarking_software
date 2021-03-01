@@ -3,14 +3,14 @@
 
 from __future__ import print_function
 
-from copy import copy, deepcopy
+from copy import deepcopy
 
 import rospy
 from geometry_msgs.msg import PoseWithCovarianceStamped, Point
 from visualization_msgs.msg import Marker, MarkerArray
 
 from benchmark_scripts.preprocess.base_preprocess import BasePreprocess
-from beast_msgs.msg import Handle
+from beast_msgs.msg import Handle, Wheel
 
 import numpy as np
 import pandas as pd
@@ -42,9 +42,19 @@ class PreprocessObject(BasePreprocess):
         self.x1 = None
         self.y1 = None
 
+        # start moving threshold. The cart is considered to have started moving when any wheel angle changes more than this threshold from the initial angle.
+        self.start_moving_threshold = 0.1  # radians
+
+        # start moving variables
+        self.cart_starts_moving = False
+        self.left_wheel_initial_angle = None
+        self.right_wheel_initial_angle = None
+
         # Subscribers
         self.handle_sub = None
         self.pose_sub = None
+        self.left_wheel_sub = None
+        self.right_wheel_sub = None
 
         if not rospy.has_param('checkpoints'):
             rospy.logfatal("param 'checkpoints' not set")
@@ -88,13 +98,19 @@ class PreprocessObject(BasePreprocess):
 
         if live_benchmark:
             pose_topic_name = '/amcl_pose'
+            left_wheel_topic_name = '/beast_cart/left/wheel_status'
+            right_wheel_topic_name = '/beast_cart/right/wheel_status'
             handle_topic_name = '/beast_cart/handle'
         else:
             pose_topic_name = '/rosbag_replay/amcl_pose'
+            left_wheel_topic_name = '/rosbag_replay/beast_cart/left/wheel_status'
+            right_wheel_topic_name = '/rosbag_replay/beast_cart/right/wheel_status'
             handle_topic_name = '/rosbag_replay/beast_cart/handle'
 
         # Subscribers (instantiated last to avoid registering the callbacks before the attributes of self are completely instantiated)
         self.pose_sub = rospy.Subscriber(pose_topic_name, PoseWithCovarianceStamped, self.pose_callback)
+        self.left_wheel_sub = rospy.Subscriber(left_wheel_topic_name, Wheel, self.left_wheel_callback)
+        self.right_wheel_sub = rospy.Subscriber(right_wheel_topic_name, Wheel, self.right_wheel_callback)
         self.handle_sub = rospy.Subscriber(handle_topic_name, Handle, self.handle_state_callback)
         self.publish_marker_timer = rospy.Timer(rospy.Duration.from_sec(0.1), self.publish_marker_callback)
 
@@ -184,6 +200,32 @@ class PreprocessObject(BasePreprocess):
         self.x1 = x2
         self.y1 = y2
 
+    def left_wheel_callback(self, msg):
+        if not self.cart_starts_moving:
+            if self.left_wheel_initial_angle is None:
+                # before the cart has started moving, we need to get the initial position of the wheels
+                self.left_wheel_initial_angle = msg.angle
+
+            # check when the difference between the initial and current position is higher than the threshold
+            raw_diff = np.abs(self.left_wheel_initial_angle - msg.angle)
+            if min(raw_diff, np.abs(raw_diff - 2*np.pi)) > self.start_moving_threshold:
+                self.cart_starts_moving = True
+                print("cart starts moving")
+                self.events.append((msg.header.stamp.to_sec(), 'cart_starts_moving'))
+
+    def right_wheel_callback(self, msg):
+        if not self.cart_starts_moving:
+            if self.right_wheel_initial_angle is None:
+                # before the cart has started moving, we need to get the initial position of the wheels
+                self.right_wheel_initial_angle = msg.angle
+
+            # check when the difference between the initial and current position is higher than the threshold
+            raw_diff = np.abs(self.right_wheel_initial_angle - msg.angle)
+            if min(raw_diff, np.abs(raw_diff - 2*np.pi)) > self.start_moving_threshold:
+                self.cart_starts_moving = True
+                print("cart starts moving")
+                self.events.append((msg.header.stamp.to_sec(), 'cart_starts_moving'))
+
     def handle_state_callback(self, handle):
         if not self.handle_has_been_touched and np.abs(handle.force) > self.handle_force_th:
             self.handle_has_been_touched = True
@@ -192,6 +234,8 @@ class PreprocessObject(BasePreprocess):
     def finish(self):
         try:
             self.pose_sub.unregister()
+            self.left_wheel_sub.unregister()
+            self.right_wheel_sub.unregister()
             self.handle_sub.unregister()
             self.publish_marker_timer.shutdown()
         except rospy.exceptions.ROSException:
