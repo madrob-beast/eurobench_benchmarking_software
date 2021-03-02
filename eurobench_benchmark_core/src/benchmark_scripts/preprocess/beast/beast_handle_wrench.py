@@ -38,5 +38,5 @@ class PreprocessObject(BasePreprocess):
         return self.data_format_name, preprocess_file_path
 
     def handle_state_callback(self, handle):
-        force_newtons = handle.force * 0.0098  # convert handle.force from grams-force to Newtons
+        force_newtons = handle.force * 0.0098 * 1000  # convert handle.force from grams-force to Newtons TODO for now using kg instead of grams
         self.handle_force_list.append((handle.header.stamp.to_sec(), force_newtons))
