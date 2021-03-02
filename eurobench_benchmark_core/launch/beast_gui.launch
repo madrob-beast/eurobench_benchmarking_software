@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<launch>
+
+  <include file="$(find benchmark_gui)/launch/beast_gui.launch" />
+
+</launch>

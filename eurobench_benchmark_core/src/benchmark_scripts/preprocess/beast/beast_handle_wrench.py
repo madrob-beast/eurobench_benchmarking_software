@@ -4,7 +4,7 @@
 import pandas as pd
 import rospy
 from benchmark_scripts.preprocess.base_preprocess import BasePreprocess
-from madrob_msgs.msg import Handle
+from beast_msgs.msg import Handle
 
 
 class PreprocessObject(BasePreprocess):
@@ -19,9 +19,14 @@ class PreprocessObject(BasePreprocess):
         self.run_number = run_number
         self.preprocess_dir = preprocess_dir
 
-        handle_node_name = rospy.get_param('testbed_nodes')['handle']
         self.handle_force_list = list()
-        self.handle_sub = rospy.Subscriber('/' + handle_node_name + '/state', Handle, self.handle_state_callback)
+
+        if live_benchmark:
+            input_topic_name = '/beast_cart/handle'
+        else:
+            input_topic_name = '/rosbag_replay/beast_cart/handle'
+
+        self.handle_sub = rospy.Subscriber(input_topic_name, Handle, self.handle_state_callback)
 
     def finish(self):
         self.handle_sub.unregister()
@@ -33,5 +38,5 @@ class PreprocessObject(BasePreprocess):
         return self.data_format_name, preprocess_file_path
 
     def handle_state_callback(self, handle):
-        force_newtons = handle.force * 0.0098  # convert handle.force from grams-force to Newtons
+        force_newtons = handle.force * 0.0098 * 1000  # convert handle.force from grams-force to Newtons TODO for now using kg instead of grams
         self.handle_force_list.append((handle.header.stamp.to_sec(), force_newtons))

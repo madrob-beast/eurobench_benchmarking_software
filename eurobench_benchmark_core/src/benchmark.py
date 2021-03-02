@@ -37,7 +37,7 @@ class Benchmark(object):
         if benchmark_group == 'MADROB':
             self.testbed_comm = MadrobTestbedComm(self.config['benchmarks'])
         elif benchmark_group == 'BEAST':
-            self.testbed_comm = BeastTestbedComm()
+            self.testbed_comm = BeastTestbedComm(self.config['benchmarks'])
 
         self.terminated = None
         self.live_benchmark = None
@@ -79,24 +79,38 @@ class Benchmark(object):
     def execute(self):
         start_time_str = self.start_time.strftime('%Y%m%d_%H%M%S')
 
-        madrob_conditions_path = rospy.get_param('~madrob_conditions_path')
         conditions_table = dict()
         conditions_path_table = dict()
-        for condition_path in glob.glob(path.join(madrob_conditions_path, 'condition_*.yaml')):
-            condition_number = int(path.basename(condition_path).replace("condition_", '').replace(".yaml", ''))
-            with open(condition_path) as condition_file:
-                condition = yaml.safe_load(condition_file)
-                conditions_table[(condition['benchmark_type'], condition['door_opening_side'], condition['robot_approach_side'])] = condition_number
-                conditions_path_table[(condition['benchmark_type'], condition['door_opening_side'], condition['robot_approach_side'])] = condition_path
+        if self.benchmark_group == "MADROB":
+            madrob_conditions_path = rospy.get_param('~madrob_conditions_path')
+            for condition_path in glob.glob(path.join(madrob_conditions_path, 'condition_*.yaml')):
+                condition_number = int(path.basename(condition_path).replace("condition_", '').replace(".yaml", ''))
+                with open(condition_path) as condition_file:
+                    condition = yaml.safe_load(condition_file)
+                    conditions_table[(condition['benchmark_type'], condition['door_opening_side'], condition['robot_approach_side'])] = condition_number
+                    conditions_path_table[(condition['benchmark_type'], condition['door_opening_side'], condition['robot_approach_side'])] = condition_path
+        else:
+            beast_conditions_path = rospy.get_param('~beast_conditions_path')
+            for condition_path in glob.glob(path.join(beast_conditions_path, 'condition_*.yaml')):
+                condition_number = int(path.basename(condition_path).replace("condition_", '').replace(".yaml", ''))
+                with open(condition_path) as condition_file:
+                    condition = yaml.safe_load(condition_file)
+                    conditions_table[(condition['disturbance_type'], condition['load'], condition['start_already_gripping'])] = condition_number
+                    conditions_path_table[(condition['disturbance_type'], condition['load'], condition['start_already_gripping'])] = condition_path
 
         if self.live_benchmark:
             # Setup testbed
             self.testbed_comm.setup_testbed()
             self.testbed_conf = self.testbed_comm.get_testbed_conf_file(self.start_time_ros, self.robot_name, self.run_number)
 
-            condition_number = conditions_table[(self.testbed_conf['benchmark_type'], self.testbed_conf['door_opening_side'], self.testbed_conf['robot_approach_side'])]
-            self.testbed_conf['condition_number'] = condition_number
-            condition_path = conditions_path_table[(self.testbed_conf['benchmark_type'], self.testbed_conf['door_opening_side'], self.testbed_conf['robot_approach_side'])]
+            if self.benchmark_group == "MADROB":
+                condition_number = conditions_table[(self.testbed_conf['benchmark_type'], self.testbed_conf['door_opening_side'], self.testbed_conf['robot_approach_side'])]
+                self.testbed_conf['condition_number'] = condition_number
+                condition_path = conditions_path_table[(self.testbed_conf['benchmark_type'], self.testbed_conf['door_opening_side'], self.testbed_conf['robot_approach_side'])]
+            else:
+                condition_number = conditions_table[(self.testbed_conf['disturbance_type'], self.testbed_conf['load'], self.testbed_conf['start_already_gripping'])]
+                self.testbed_conf['condition_number'] = condition_number
+                condition_path = conditions_path_table[(self.testbed_conf['disturbance_type'], self.testbed_conf['load'], self.testbed_conf['start_already_gripping'])]
 
             # make paths for directory and each file
             benchmark_id = "subject_{subject_number:03d}_cond_{condition_number:03d}_run_{run_number:03d}_{t}".format(
@@ -142,10 +156,14 @@ class Benchmark(object):
                 return
         else:
             # if this is a run from bag the testbed configuration (self.testbed_conf) is the input to compute every other value
-
-            condition_number = conditions_table[(self.testbed_conf['benchmark_type'], self.testbed_conf['door_opening_side'], self.testbed_conf['robot_approach_side'])]
-            self.testbed_conf['condition_number'] = condition_number
-            condition_path = conditions_path_table[(self.testbed_conf['benchmark_type'], self.testbed_conf['door_opening_side'], self.testbed_conf['robot_approach_side'])]
+            if self.benchmark_group == "MADROB":
+                condition_number = conditions_table[(self.testbed_conf['benchmark_type'], self.testbed_conf['door_opening_side'], self.testbed_conf['robot_approach_side'])]
+                self.testbed_conf['condition_number'] = condition_number
+                condition_path = conditions_path_table[(self.testbed_conf['benchmark_type'], self.testbed_conf['door_opening_side'], self.testbed_conf['robot_approach_side'])]
+            else:
+                condition_number = conditions_table[(self.testbed_conf['disturbance_type'], self.testbed_conf['load'], self.testbed_conf['start_already_gripping'])]
+                self.testbed_conf['condition_number'] = condition_number
+                condition_path = conditions_path_table[(self.testbed_conf['disturbance_type'], self.testbed_conf['load'], self.testbed_conf['start_already_gripping'])]
 
             # make paths for directory and each file
             benchmark_id = "subject_{subject_number:03d}_cond_{condition_number:03d}_run_{run_number:03d}_{t}".format(
@@ -172,6 +190,9 @@ class Benchmark(object):
 
         if preprocess_ret:
             # Loop while benchmark is running
+            if self.benchmark_group == "BEAST" and self.live_benchmark:
+                self.testbed_comm.start()
+
             while not self.terminated:
                 rospy.sleep(0.1)
         else:
@@ -181,6 +202,9 @@ class Benchmark(object):
         self.preprocess.finish()
 
         if self.live_benchmark:
+            if self.benchmark_group == "BEAST":
+                self.testbed_comm.stop()
+
             # Stop recording
             response = self.stop_recording_service()
             if not response.success:

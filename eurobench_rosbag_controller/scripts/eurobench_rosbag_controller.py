@@ -23,18 +23,11 @@ class RosbagController():
         self.stop_rosbag_service = rospy.Service('/eurobench_rosbag_controller/stop_rosbag', Trigger, self.stop_rosbag)
         self.playing_process = None
         self.playing = False
-
         self.shutdown_service = rospy.Service('/eurobench_rosbag_controller/shutdown', Empty, self.shutdown_callback)
-
-        try:
-            rospy.wait_for_service('bmcore/stop_benchmark', timeout=5.0)
-        except rospy.ROSException:
-            rospy.logfatal('bmcore: stop_benchmark service unavailable.')
-            rospy.signal_shutdown('Benchmark core unavailable')
 
         self.stop_benchmark = rospy.ServiceProxy('bmcore/stop_benchmark', StopBenchmark)
 
-        rospy.loginfo('Rosbag Controller Started')
+        self.remap_all_topics = None
 
     def start_recording(self, req):
         if self.recording:
@@ -88,10 +81,15 @@ class RosbagController():
 
         remaps = []
 
-        for topic in topics:
-            for remapping in topic_remappings:
-                if remapping in topic:
-                    remaps.append(topic + ':=' + topic.replace(remapping, remapping+'_bag'))
+        if self.remap_all_topics:
+            for topic in topics:
+                remaps.append("{topic}:=/rosbag_replay{topic}".format(topic=topic))
+
+        else:
+            for topic in topics:
+                for remapping in topic_remappings:
+                    if remapping in topic:
+                        remaps.append(topic + ':=' + topic.replace(remapping, remapping+'_bag'))
 
         if remaps:
             command = ['rosrun', 'rosbag', 'play', req.rosbag_filepath] + remaps + ['__name:=eurobench_rosbag_player_node']
@@ -118,8 +116,16 @@ class RosbagController():
 
     def run(self):
         rospy.init_node('eurobench_rosbag_controller')
-        rate = rospy.Rate(10)  # 10Hz
+        self.remap_all_topics = rospy.get_param("~remap_all_topics")
 
+        try:
+            rospy.wait_for_service('bmcore/stop_benchmark', timeout=5.0)
+        except rospy.ROSException:
+            rospy.logfatal('bmcore: stop_benchmark service unavailable.')
+            rospy.signal_shutdown('Benchmark core unavailable')
+
+        rospy.loginfo('Rosbag Controller Started')
+        rate = rospy.Rate(10)  # 10Hz
         while not rospy.is_shutdown():
             # If rosbag is playing and has finished: terminate benchmark.
             if self.playing:

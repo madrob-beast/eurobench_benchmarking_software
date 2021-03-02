@@ -1,5 +1,11 @@
 benchmark_group: BEAST
 
-testbed_nodes:
-  trolley: beast/trolley
-  handle: beast/handle
+# Note: the lut in benchmarks/disturbance_type, when present (if mode is "lut") is padded with values of 0.0 to reach a length of 360 elements
+benchmarks:
+  No Force:
+    id: 1
+    mode: "disabled"
+
+  Sudden Force:
+    id: 2
+    mode: "sudden_force"

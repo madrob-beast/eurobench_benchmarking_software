@@ -142,7 +142,7 @@ class BenchmarkCore(object):
         if self.benchmark_group == 'MADROB':
             rospy.Service('madrob/settings', MadrobSettings, self.madrob_settings_callback)
         # elif self.benchmark_group == 'BEAST':
-        #     rospy.Service('madrob/settings', BeastSettings, self.beast_settings_callback)  # TODO
+        #     rospy.Service('madrob/settings', BeastSettings, self.beast_settings_callback)  # TODO maybe?
 
         self.benchmark_core_state_publisher = rospy.Publisher('bmcore/state', BenchmarkCoreState, queue_size=1)
 
