@@ -2,7 +2,7 @@
 
 <launch>
 
-  <include file="$(find eurobench_benchmark_core)/launch/beast.launch" />
+  <include file="$(find eurobench_benchmark_core)/launch/beast_bms.launch" />
   <include file="$(find eurobench_benchmark_core)/launch/beast_gui.launch" />
 
 </launch>
