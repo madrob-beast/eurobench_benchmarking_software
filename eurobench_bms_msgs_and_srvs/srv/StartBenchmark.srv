@@ -1,6 +1,4 @@
-string robot_name
+uint16 robot_name
 uint16 run_number
-bool live_benchmark
-string testbed_conf
 ---
 bool success

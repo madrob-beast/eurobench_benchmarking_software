@@ -65,17 +65,6 @@ class Benchmark(object):
             self.robot_name = self.testbed_conf['robot_name']
             self.run_number = self.testbed_conf['run_number']
 
-    def get_benchmark_info(self):
-        benchmark_info = OrderedDict([
-            ('Robot name', self.robot_name),
-            ('Run number', self.run_number),
-            ('Benchmark', self.benchmark_group),
-            ('Start time', self.start_time.strftime('%Y-%m-%d_%H:%M:%S')),
-            ('Result', self.result)
-        ])
-
-        return json.dumps(benchmark_info, indent=2)
-
     def execute(self):
         start_time_str = self.start_time.strftime('%Y%m%d_%H%M%S')
 
