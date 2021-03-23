@@ -40,11 +40,7 @@ class BenchmarkCore(object):
                 'Cannot start benchmark: a benchmark is currently running.')
             return StartBenchmarkResponse(False)
 
-        benchmark = Benchmark(self.benchmark_group, self.config)
-
-        benchmark.setup(request.robot_name, request.run_number, True, None, None)
-
-        self.current_benchmark = benchmark
+        self.current_benchmark = Benchmark(self.benchmark_group, self.config, request.robot_name, request.run_number)
 
         rospy.loginfo('\n---\n STARTING BENCHMARK: %s | Robot name: %s | Run %d\n---' % (self.benchmark_group, self.current_benchmark.robot_name, self.current_benchmark.run_number))
 
@@ -116,8 +112,6 @@ class BenchmarkCore(object):
 
         if self.benchmark_group == 'MADROB':
             rospy.Service('madrob/settings', MadrobSettings, self.madrob_settings_callback)
-        # elif self.benchmark_group == 'BEAST':
-        #     rospy.Service('madrob/settings', BeastSettings, self.beast_settings_callback)  # TODO maybe?
 
         self.benchmark_core_state_publisher = rospy.Publisher('bmcore/state', BenchmarkCoreState, queue_size=1)
 

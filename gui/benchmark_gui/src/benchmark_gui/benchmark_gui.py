@@ -158,8 +158,7 @@ class BenchmarkGui(Plugin):
 
         # Testbed
         if self.benchmark_group == 'MADROB':
-            door_node_name = rospy.get_param('testbed_nodes')['door']
-            set_mode_service_name = '/' + door_node_name + '/set_mode'
+            set_mode_service_name = '/madrob/door/set_mode'
 
             try:
                 rospy.wait_for_service(set_mode_service_name, timeout=0.5)

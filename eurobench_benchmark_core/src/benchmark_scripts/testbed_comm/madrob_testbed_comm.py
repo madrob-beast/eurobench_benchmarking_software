@@ -15,8 +15,6 @@ class MadrobTestbedComm(object):
 
         self.current_benchmark_name = None
         self.current_benchmark_type = None
-        # self.conditions_table = None
-        # self.conditions_path_table = None
 
         self.stop_benchmark = rospy.ServiceProxy('bmcore/stop_benchmark', StopBenchmark)
 
@@ -35,9 +33,7 @@ class MadrobTestbedComm(object):
         self.robot_approach_side = response.robot_approach_side
 
         # Set door controller mode
-        door_node_name = rospy.get_param('testbed_nodes')['door']
-
-        set_mode_service_name = '/' + door_node_name + '/set_mode'
+        set_mode_service_name = '/madrob/door/set_mode'
         try:
             rospy.wait_for_service(set_mode_service_name, timeout=5.0)
         except rospy.ROSException:
@@ -63,7 +59,7 @@ class MadrobTestbedComm(object):
         lutCCW = list(reversed(self.current_benchmark_type['lut']))
 
         # Set door controller LUT
-        set_door_lut = rospy.ServiceProxy('/' + door_node_name + '/set_lut', SetDoorControllerLUT)
+        set_door_lut = rospy.ServiceProxy('/madrob/door/set_lut', SetDoorControllerLUT)
 
         if self.current_benchmark_type['brake_enabled']:
             cw_door_lut_request = SetDoorControllerLUTRequest()

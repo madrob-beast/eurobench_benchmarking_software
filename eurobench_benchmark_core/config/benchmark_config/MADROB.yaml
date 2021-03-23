@@ -1,11 +1,5 @@
 benchmark_group: MADROB
 
-testbed_nodes:
-  door: madrob/door
-  handle: madrob/handle
-  passage: madrob/passage
-# Alternatively the node names dummy_door, dummy_handle and dummy_passage can be used when the MADROB dummy node is launched.
-
 # Length of window for moving average and Savitzky-Golay filter, in seconds
 door_angle_filter_window_length: 0.2
 

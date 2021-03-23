@@ -89,7 +89,7 @@ class PreprocessObject(BasePreprocess):
         # Enable visualisation of passage sensors and door closing/opening events in the terminal.
         self.print_debug_info = False
 
-    def start(self, benchmark_group, robot_name, condition_number, run_number, start_time, testbed_conf, preprocess_dir, live_benchmark):
+    def start(self, benchmark_group, robot_name, condition_number, run_number, start_time, testbed_conf, preprocess_dir):
         self.robot_name = robot_name
         self.condition_number = condition_number
         self.run_number = run_number
@@ -100,9 +100,6 @@ class PreprocessObject(BasePreprocess):
         self.events.append((start_time_ros, 'benchmark_start'))
 
         # Params
-        door_node_name = rospy.get_param('testbed_nodes')['door']
-        passage_node_name = rospy.get_param('testbed_nodes')['passage']
-        handle_node_name = rospy.get_param('testbed_nodes')['handle']
         output_passage_topic_name = rospy.get_param('output_passage_topic_name', 'madrob/preprocessed_data/passage')
 
         # Publishers
@@ -113,12 +110,12 @@ class PreprocessObject(BasePreprocess):
         self.ccw_raw_pub = [rospy.Publisher('/' + output_passage_topic_name + '/dccw%i' % i, Float64, queue_size=1) for i in range(self.ccw_num_sensors)]
 
         # Subscribers (instantiated last to avoid registering the callbacks before the attributes of self are completely instantiated)
-        self.door_sub = rospy.Subscriber('/' + door_node_name + '/state', Door, self.door_state_callback)
-        self.cw_right_sub = message_filters.Subscriber('/' + passage_node_name + '/cw_right', Passage)
-        self.cw_left_sub = message_filters.Subscriber('/' + passage_node_name + '/cw_left', Passage)
-        self.ccw_right_sub = message_filters.Subscriber('/' + passage_node_name + '/ccw_right', Passage)
-        self.ccw_left_sub = message_filters.Subscriber('/' + passage_node_name + '/ccw_left', Passage)
-        self.handle_sub = rospy.Subscriber('/' + handle_node_name + '/state', Handle, self.handle_state_callback)
+        self.door_sub = rospy.Subscriber('/madrob/door/state', Door, self.door_state_callback)
+        self.cw_right_sub = message_filters.Subscriber('/madrob/passage/cw_right', Passage)
+        self.cw_left_sub = message_filters.Subscriber('/madrob/passage/cw_left', Passage)
+        self.ccw_right_sub = message_filters.Subscriber('/madrob/passage/ccw_right', Passage)
+        self.ccw_left_sub = message_filters.Subscriber('/madrob/passage/ccw_left', Passage)
+        self.handle_sub = rospy.Subscriber('/madrob/handle/state', Handle, self.handle_state_callback)
         self.door_proximity_timesync = message_filters.ApproximateTimeSynchronizer([self.cw_right_sub, self.cw_left_sub, self.ccw_right_sub, self.ccw_left_sub], 10, 0.1)
         self.door_proximity_timesync.registerCallback(self.door_proximity_callback)
 

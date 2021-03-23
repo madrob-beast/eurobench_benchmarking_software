@@ -15,7 +15,7 @@ class PreprocessObject(BasePreprocess):
         self.scan_sub = None
         self.distance_list = None
 
-    def start(self, benchmark_group, robot_name, condition_number, run_number, start_time, testbed_conf, preprocess_dir, live_benchmark):
+    def start(self, benchmark_group, robot_name, condition_number, run_number, start_time, testbed_conf, preprocess_dir):
         self.robot_name = robot_name
         self.condition_number = condition_number
         self.run_number = run_number
@@ -23,10 +23,7 @@ class PreprocessObject(BasePreprocess):
 
         self.distance_list = list()
 
-        if live_benchmark:
-            input_topic_name = '/beast_cart/scan_filtered'
-        else:
-            input_topic_name = '/rosbag_replay/beast_cart/scan_filtered'
+        input_topic_name = '/beast_cart/scan_filtered'
 
         self.scan_sub = rospy.Subscriber(input_topic_name, LaserScan, self.scan_callback)
 
