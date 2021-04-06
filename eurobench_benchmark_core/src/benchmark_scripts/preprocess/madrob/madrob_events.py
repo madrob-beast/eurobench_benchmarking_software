@@ -61,11 +61,10 @@ class PreprocessObject(BasePreprocess):
 
         # An offset, which if subtracted from the handle force value, gives us the force signal.
         # e.g. force 750, offset 750: force signal = 0
-        # TODO: This should either be 0, or a door calibration constant
-        self.handle_force_offset = 750
+        self.handle_force_offset = 0
 
-        # The door is being pushed / pulled when the absolute force signal is greater than this threshold.
-        self.handle_force_th = 200  # TODO need more sensor data
+        # The door is being pushed / pulled when the absolute force signal (grams) is greater than this threshold.
+        self.handle_force_th = 200
 
         # We only need the first handle_is_touched event, so when it happens, this flag is set.
         self.handle_has_been_touched = False
