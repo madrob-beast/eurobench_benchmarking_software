@@ -20,7 +20,7 @@ class PreprocessObject(BasePreprocess):
         self.moving_average_width = None
         self.print_debug_info = False
 
-    def start(self, benchmark_group, robot_name, condition_number, run_number, start_time, testbed_conf, preprocess_dir, live_benchmark):
+    def start(self, benchmark_group, robot_name, condition_number, run_number, start_time, testbed_conf, preprocess_dir):
         self.robot_name = robot_name
         self.condition_number = condition_number
         self.run_number = run_number
@@ -33,8 +33,7 @@ class PreprocessObject(BasePreprocess):
         self.lp_angle_list = list()
         self.timestamp_list = list()
 
-        door_node_name = rospy.get_param('testbed_nodes')['door']
-        self.door_sub = rospy.Subscriber('/' + door_node_name + '/state', Door, self.door_state_callback)
+        self.door_sub = rospy.Subscriber('/madrob/door/state', Door, self.door_state_callback)
 
     def door_state_callback(self, door):
         self.angle_list.append(door.angle)

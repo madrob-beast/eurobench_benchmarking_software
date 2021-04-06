@@ -87,7 +87,7 @@ class PreprocessObject(BasePreprocess):
         self.vis_pub = rospy.Publisher("/visualization_marker_array", MarkerArray, queue_size=100)
         self.publish_marker_timer = None
 
-    def start(self, benchmark_group, robot_name, condition_number, run_number, start_time, testbed_conf, preprocess_dir, live_benchmark):
+    def start(self, benchmark_group, robot_name, condition_number, run_number, start_time, testbed_conf, preprocess_dir):
         self.robot_name = robot_name
         self.condition_number = condition_number
         self.run_number = run_number
@@ -96,16 +96,10 @@ class PreprocessObject(BasePreprocess):
         # Start_time event
         self.events.append((float(testbed_conf['start_time']), 'benchmark_start'))
 
-        if live_benchmark:
-            pose_topic_name = '/amcl_pose'
-            left_wheel_topic_name = '/beast_cart/left/wheel_status'
-            right_wheel_topic_name = '/beast_cart/right/wheel_status'
-            handle_topic_name = '/beast_cart/handle'
-        else:
-            pose_topic_name = '/rosbag_replay/amcl_pose'
-            left_wheel_topic_name = '/rosbag_replay/beast_cart/left/wheel_status'
-            right_wheel_topic_name = '/rosbag_replay/beast_cart/right/wheel_status'
-            handle_topic_name = '/rosbag_replay/beast_cart/handle'
+        pose_topic_name = '/amcl_pose'
+        left_wheel_topic_name = '/beast_cart/left/wheel_status'
+        right_wheel_topic_name = '/beast_cart/right/wheel_status'
+        handle_topic_name = '/beast_cart/handle'
 
         # Subscribers (instantiated last to avoid registering the callbacks before the attributes of self are completely instantiated)
         self.pose_sub = rospy.Subscriber(pose_topic_name, PoseWithCovarianceStamped, self.pose_callback)

@@ -13,15 +13,14 @@ class PreprocessObject(BasePreprocess):
         self.handle_sub = None
         self.handle_force_list = None
 
-    def start(self, benchmark_group, robot_name, condition_number, run_number, start_time, testbed_conf, preprocess_dir, live_benchmark):
+    def start(self, benchmark_group, robot_name, condition_number, run_number, start_time, testbed_conf, preprocess_dir):
         self.robot_name = robot_name
         self.condition_number = condition_number
         self.run_number = run_number
         self.preprocess_dir = preprocess_dir
 
-        handle_node_name = rospy.get_param('testbed_nodes')['handle']
         self.handle_force_list = list()
-        self.handle_sub = rospy.Subscriber('/' + handle_node_name + '/state', Handle, self.handle_state_callback)
+        self.handle_sub = rospy.Subscriber('/madrob/handle/state', Handle, self.handle_state_callback)
 
     def finish(self):
         self.handle_sub.unregister()

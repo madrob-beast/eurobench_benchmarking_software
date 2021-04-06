@@ -60,9 +60,6 @@ class madrob_settings_gui(Plugin):
         self.door_opening_side_combo.addItems(['CW', 'CCW'])
         self.robot_approach_side_combo.addItems(['CW', 'CCW'])
 
-        self.door_node_name = None
-        self.handle_node_name = None
-
         # Every second, check for MADROB's settings from the core
         self.benchmark_types_set = False
         rospy.Timer(rospy.Duration(1), self.check_madrob_settings)
@@ -111,7 +108,7 @@ class madrob_settings_gui(Plugin):
             rospy.logerr('Error parsing integer for "weight": no calibration done.')
             return
 
-        calibrate_handle_service_name = '/' + self.handle_node_name + '/calibrate'
+        calibrate_handle_service_name = '/madrob/handle/calibrate'
         try:
             rospy.wait_for_service(calibrate_handle_service_name, timeout=1)
         except rospy.ROSException:
@@ -138,7 +135,7 @@ class madrob_settings_gui(Plugin):
             rospy.logerr('Error parsing integer for "weight": no calibration done.')
             return
 
-        calibrate_handle_service_name = '/' + self.handle_node_name + '/calibrate'
+        calibrate_handle_service_name = '/madrob/handle/calibrate'
         try:
             rospy.wait_for_service(calibrate_handle_service_name, timeout=1)
         except rospy.ROSException:
@@ -172,7 +169,7 @@ class madrob_settings_gui(Plugin):
         self.calibrate_encoder(CalibrateDoorPositionRequest.POSITION_CCW)
 
     def calibrate_encoder(self, position):
-        calibrate_position_service_name = '/' + self.door_node_name + '/calibrate_position'
+        calibrate_position_service_name = '/madrob/door/calibrate_position'
         try:
             rospy.wait_for_service(calibrate_position_service_name, timeout=1)
         except rospy.ROSException:
@@ -192,8 +189,6 @@ class madrob_settings_gui(Plugin):
 
     def run_rospy_node(self):
         rospy.Service('madrob/gui/benchmark_params', MadrobBenchmarkParams, self.benchmark_params_callback)
-        self.door_node_name = rospy.get_param('testbed_nodes')['door']
-        self.handle_node_name = rospy.get_param('testbed_nodes')['handle']
 
     def benchmark_params_callback(self, _):
         benchmark_params_response = MadrobBenchmarkParamsResponse()

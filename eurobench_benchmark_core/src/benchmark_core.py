@@ -40,21 +40,9 @@ class BenchmarkCore(object):
                 'Cannot start benchmark: a benchmark is currently running.')
             return StartBenchmarkResponse(False)
 
-        benchmark = Benchmark(self.benchmark_group, self.config)
+        self.current_benchmark = Benchmark(self.benchmark_group, self.config, request.robot_name, request.run_number)
 
-        testbed_conf = None
-        testbed_conf_path = None
-        if not request.live_benchmark:
-            testbed_conf_path = request.testbed_conf
-            with open(testbed_conf_path, 'r') as testbed_conf_file:
-                testbed_conf = yaml.load(testbed_conf_file, Loader=yaml.FullLoader)
-
-        benchmark.setup(request.robot_name, request.run_number, request.live_benchmark, testbed_conf, testbed_conf_path)
-
-        self.current_benchmark = benchmark
-
-        rospy.loginfo('\n---\n STARTING BENCHMARK: %s | Robot name: %s | Run %d\n---' %
-                      (self.benchmark_group, self.current_benchmark.robot_name, self.current_benchmark.run_number))
+        rospy.loginfo('\n---\n STARTING BENCHMARK: %s | Robot name: %s | Run %d\n---' % (self.benchmark_group, self.current_benchmark.robot_name, self.current_benchmark.run_number))
 
         # Execute benchmark in a new thread
         threading.Thread(target=self.execute_benchmark).start()
@@ -63,22 +51,11 @@ class BenchmarkCore(object):
 
     def stop_benchmark_callback(self, _):
         if self.current_benchmark:
-            rospy.loginfo('Sending terminate signal to benchmark: %s' %
-                          self.benchmark_group)
+            rospy.loginfo('Sending terminate signal to benchmark: %s' % self.benchmark_group)
             self.current_benchmark.terminated = True
             # Setting current_benchmark to None not needed, as the current benchmark should finish execution soon.
 
         return StopBenchmarkResponse(True)
-
-    @staticmethod
-    def bmcore_robot_names_callback(_):
-        settings_response = BenchmarkCoreRobotNamesResponse()
-
-        # Get robot names from params
-        robot_names = rospy.get_param('robot_names')
-        settings_response.robot_names = robot_names
-        
-        return settings_response
 
     def shutdown_callback(self, _):
         if self.current_benchmark:
@@ -112,8 +89,6 @@ class BenchmarkCore(object):
         rospy.loginfo('\n---\n BENCHMARK FINISHED: %s | Robot name: %s \n---' %
                       (self.benchmark_group, self.current_benchmark.robot_name))
 
-        self.last_benchmark_info = self.current_benchmark.get_benchmark_info()
-
         self.current_benchmark = None
 
     def publish_core_state(self):
@@ -123,30 +98,24 @@ class BenchmarkCore(object):
         if self.current_benchmark:
             core_state.status = core_state.RUNNING_BENCHMARK
             core_state.current_benchmark_seconds_passed = (datetime.now() - self.current_benchmark.start_time).total_seconds()
-            core_state.current_benchmark_info = self.current_benchmark.get_benchmark_info()
-
+            if core_state.current_benchmark_seconds_passed < 0:
+                core_state.current_benchmark_seconds_passed -= 1  # so it reaches 0 a the right moment
         else:
             core_state.status = core_state.READY
-            if self.last_benchmark_info:
-                core_state.current_benchmark_seconds_passed = -self.benchmark_countdown
-                core_state.last_benchmark_info = self.last_benchmark_info
 
         self.benchmark_core_state_publisher.publish(core_state)
 
     def run(self):
         rospy.Service('bmcore/start_benchmark', StartBenchmark, self.start_benchmark_callback)
         rospy.Service('bmcore/stop_benchmark', StopBenchmark, self.stop_benchmark_callback)
-        rospy.Service('bmcore/robot_names', BenchmarkCoreRobotNames, self.bmcore_robot_names_callback)
         rospy.Service('bmcore/shutdown', Empty, self.shutdown_callback)
 
         if self.benchmark_group == 'MADROB':
             rospy.Service('madrob/settings', MadrobSettings, self.madrob_settings_callback)
-        # elif self.benchmark_group == 'BEAST':
-        #     rospy.Service('madrob/settings', BeastSettings, self.beast_settings_callback)  # TODO maybe?
 
         self.benchmark_core_state_publisher = rospy.Publisher('bmcore/state', BenchmarkCoreState, queue_size=1)
 
-        rate = rospy.Rate(10)  # 10Hz
+        rate = rospy.Rate(50)  # 10Hz
         while not rospy.is_shutdown():
             self.publish_core_state()
             rate.sleep()
