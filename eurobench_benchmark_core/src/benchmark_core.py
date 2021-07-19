@@ -21,10 +21,10 @@ class BenchmarkCore(object):
         self.last_benchmark_info = ''
 
         self.benchmark_group = rospy.get_param('~benchmark_group')
-        self.benchmark_countdown = int(rospy.get_param('benchmark_countdown'))
+        self.benchmark_countdown = int(rospy.get_param('/benchmark_countdown'))
 
         # Load config from yaml file
-        config_dir = rospy.get_param('benchmark_config_directory')
+        config_dir = rospy.get_param('/benchmark_config_directory')
         config_filepath = path.join(config_dir, '%s.yaml' % self.benchmark_group)
 
         with open(config_filepath) as config_file:

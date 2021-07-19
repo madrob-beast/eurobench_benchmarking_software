@@ -97,9 +97,9 @@ class PreprocessObject(BasePreprocess):
         self.events.append((float(testbed_conf['start_time']), 'benchmark_start'))
 
         pose_topic_name = '/amcl_pose'
-        left_wheel_topic_name = '/beast_cart/left/wheel_status'
-        right_wheel_topic_name = '/beast_cart/right/wheel_status'
-        handle_topic_name = '/beast_cart/handle'
+        left_wheel_topic_name = 'left/wheel_status'
+        right_wheel_topic_name = 'right/wheel_status'
+        handle_topic_name = 'handle'
 
         # Subscribers (instantiated last to avoid registering the callbacks before the attributes of self are completely instantiated)
         self.pose_sub = rospy.Subscriber(pose_topic_name, PoseWithCovarianceStamped, self.pose_callback)

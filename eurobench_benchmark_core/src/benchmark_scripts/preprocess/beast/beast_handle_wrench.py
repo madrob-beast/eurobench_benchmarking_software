@@ -21,7 +21,7 @@ class PreprocessObject(BasePreprocess):
 
         self.handle_force_list = list()
 
-        input_topic_name = '/beast_cart/handle'
+        input_topic_name = 'handle'
 
         self.handle_sub = rospy.Subscriber(input_topic_name, Handle, self.handle_state_callback)
 
