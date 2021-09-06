@@ -31,7 +31,7 @@ class BenchmarkGui(Plugin):
         self._widget.setObjectName('EUROBENCH Benchmark Control')
         self._widget.setWindowTitle('EUROBENCH Benchmark Control')
 
-        self.benchmark_group = rospy.get_param('benchmark_group')
+        self.benchmark_group = rospy.get_param('/benchmark_group')
 
         # UI elements
         self.robot_spinbox = self._widget.findChild(QSpinBox, 'robot_spinbox')

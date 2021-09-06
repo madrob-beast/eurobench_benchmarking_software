@@ -11,6 +11,7 @@ git clone https://github.com/madrob-beast/beast.git
 git clone https://github.com/madrob-beast/beast_msgs.git
 git clone https://github.com/madrob-beast/beast_srvs.git
 
+sudo apt update
 sudo apt install -y python-pandas
 
 # install latest version of PyYAML and prevent the error:

@@ -2,6 +2,8 @@
 
 <launch>
 
-  <include file="$(find benchmark_gui)/launch/beast_gui.launch" />
+  <group ns="beast_walker">
+    <include file="$(find benchmark_gui)/launch/beast_gui.launch" />
+  </group>
 
 </launch>
