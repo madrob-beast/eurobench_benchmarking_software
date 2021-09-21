@@ -22,7 +22,7 @@ class PreprocessObject(BasePreprocess):
 
         self.position_list = list()
 
-        input_topic_name = '/amcl_pose'
+        input_topic_name = 'amcl_pose'
 
         self.pose_sub = rospy.Subscriber(input_topic_name, PoseWithCovarianceStamped, self.pose_callback)
 

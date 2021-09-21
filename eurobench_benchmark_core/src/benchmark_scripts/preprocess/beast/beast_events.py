@@ -96,7 +96,7 @@ class PreprocessObject(BasePreprocess):
         # Start_time event
         self.events.append((float(testbed_conf['start_time']), 'benchmark_start'))
 
-        pose_topic_name = '/amcl_pose'
+        pose_topic_name = 'amcl_pose'
         left_wheel_topic_name = 'left/wheel_status'
         right_wheel_topic_name = 'right/wheel_status'
         handle_topic_name = 'handle'
