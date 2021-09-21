@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<launch>
-
-  <group ns="beast_walker">
-    <include file="$(find benchmark_gui)/launch/beast_gui.launch" />
-  </group>
-
-</launch>
