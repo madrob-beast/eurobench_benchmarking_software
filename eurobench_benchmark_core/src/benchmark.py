@@ -40,8 +40,8 @@ class Benchmark(object):
         self.terminated = False
         self.robot_name = robot_name
         self.run_number = run_number
-        self.start_time = datetime.now() + timedelta(seconds=rospy.get_param('benchmark_countdown'))
-        self.start_time_ros = rospy.Time.now() + rospy.Duration(rospy.get_param('benchmark_countdown'))
+        self.start_time = datetime.now() + timedelta(seconds=rospy.get_param('/benchmark_countdown'))
+        self.start_time_ros = rospy.Time.now() + rospy.Duration(rospy.get_param('/benchmark_countdown'))
 
     def execute(self):
         start_time_str = self.start_time.strftime('%Y%m%d_%H%M%S')

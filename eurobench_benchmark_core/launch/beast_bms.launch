@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <launch>
+
+  <arg name="platform" />
+
   <rosparam file="$(find eurobench_benchmark_core)/config/general.yaml" command="load" subst_value="true" />
   <rosparam file="$(find eurobench_benchmark_core)/config/benchmark_config/BEAST.yaml" command="load" subst_value="true" />
 
-  <group ns="beast_walker">
+  <group ns="beast_$(arg platform)">
 
     <include file="$(find eurobench_rosbag_controller)/launch/controller.launch" >
       <arg name="remap_all_topics" value="true" />
@@ -15,7 +18,9 @@
       <param name="benchmark_group" value="BEAST" />
     </node>
 
-    <include file="$(find beast_localization)/launch/beast_localization.launch" />
+    <include file="$(find beast_localization)/launch/beast_localization.launch" >
+        <arg name="platform" value="$(arg platform)"/>
+    </include>
 
   </group>
 

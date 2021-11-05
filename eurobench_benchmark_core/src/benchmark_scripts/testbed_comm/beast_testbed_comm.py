@@ -20,7 +20,7 @@ class BeastTestbedComm(object):
 
         self.stop_benchmark = rospy.ServiceProxy('bmcore/stop_benchmark', StopBenchmark)
 
-        self.localization_pose_publisher = rospy.Publisher("/initialpose", PoseWithCovarianceStamped, queue_size=1)
+        self.localization_pose_publisher = rospy.Publisher("initialpose", PoseWithCovarianceStamped, queue_size=1)
 
         self.set_left_wheel_braking_mode = rospy.ServiceProxy("left/set_wheel_braking_mode", SetWheelBrakingMode)
         self.set_right_wheel_braking_mode = rospy.ServiceProxy("right/set_wheel_braking_mode", SetWheelBrakingMode)

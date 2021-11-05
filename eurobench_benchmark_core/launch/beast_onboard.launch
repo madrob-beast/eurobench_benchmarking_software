@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<launch>
-
-  <include file="$(find eurobench_benchmark_core)/launch/beast_bms.launch" />
-  <include file="$(find beast)/launch/beast.launch" />
-
-</launch>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<launch>
+
+  <arg name="platform" value="cart" />
+
+  <include file="$(find eurobench_benchmark_core)/launch/beast_bms.launch" >
+    <arg name="platform" value="$(arg platform)"/>
+  </include>
+  <include file="$(find beast)/launch/beast.launch" />
+
+</launch>
