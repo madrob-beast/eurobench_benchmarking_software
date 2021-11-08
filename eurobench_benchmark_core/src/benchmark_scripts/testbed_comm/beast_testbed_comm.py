@@ -20,22 +20,22 @@ class BeastTestbedComm(object):
 
         self.stop_benchmark = rospy.ServiceProxy('bmcore/stop_benchmark', StopBenchmark)
 
-        self.localization_pose_publisher = rospy.Publisher("/initialpose", PoseWithCovarianceStamped, queue_size=1)
+        self.localization_pose_publisher = rospy.Publisher("initialpose", PoseWithCovarianceStamped, queue_size=1)
 
-        self.set_left_wheel_braking_mode = rospy.ServiceProxy("/beast_cart/left/set_wheel_braking_mode", SetWheelBrakingMode)
-        self.set_right_wheel_braking_mode = rospy.ServiceProxy("/beast_cart/right/set_wheel_braking_mode", SetWheelBrakingMode)
+        self.set_left_wheel_braking_mode = rospy.ServiceProxy("left/set_wheel_braking_mode", SetWheelBrakingMode)
+        self.set_right_wheel_braking_mode = rospy.ServiceProxy("right/set_wheel_braking_mode", SetWheelBrakingMode)
 
-        self.set_left_wheel_braking = rospy.ServiceProxy("/beast_cart/left/set_wheel_braking", SetWheelBraking)
-        self.set_right_wheel_braking = rospy.ServiceProxy("/beast_cart/right/set_wheel_braking", SetWheelBraking)
+        self.set_left_wheel_braking = rospy.ServiceProxy("left/set_wheel_braking", SetWheelBraking)
+        self.set_right_wheel_braking = rospy.ServiceProxy("right/set_wheel_braking", SetWheelBraking)
 
-        self.set_left_wheel_braking_lut = rospy.ServiceProxy("/beast_cart/left/set_wheel_braking_lut", SetWheelBrakingLUT)
-        self.set_right_wheel_braking_lut = rospy.ServiceProxy("/beast_cart/right/set_wheel_braking_lut", SetWheelBrakingLUT)
+        self.set_left_wheel_braking_lut = rospy.ServiceProxy("left/set_wheel_braking_lut", SetWheelBrakingLUT)
+        self.set_right_wheel_braking_lut = rospy.ServiceProxy("right/set_wheel_braking_lut", SetWheelBrakingLUT)
 
-        self.left_braking_pub = rospy.Publisher("/beast_cart/left/setpoint", Float32, queue_size=1)
-        self.right_braking_pub = rospy.Publisher("/beast_cart/right/setpoint", Float32, queue_size=1)
+        self.left_braking_pub = rospy.Publisher("left/setpoint", Float32, queue_size=1)
+        self.right_braking_pub = rospy.Publisher("right/setpoint", Float32, queue_size=1)
 
-        self.left_wheel_sub = rospy.Subscriber("/beast_cart/left/wheel_status", Wheel, self.left_wheel_callback)
-        self.right_wheel_sub = rospy.Subscriber("/beast_cart/right/wheel_status", Wheel, self.right_wheel_callback)
+        self.left_wheel_sub = rospy.Subscriber("left/wheel_status", Wheel, self.left_wheel_callback)
+        self.right_wheel_sub = rospy.Subscriber("right/wheel_status", Wheel, self.right_wheel_callback)
 
         self.disturbance_type = None
         self.load = None

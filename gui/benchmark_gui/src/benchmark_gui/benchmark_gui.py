@@ -31,7 +31,7 @@ class BenchmarkGui(Plugin):
         self._widget.setObjectName('EUROBENCH Benchmark Control')
         self._widget.setWindowTitle('EUROBENCH Benchmark Control')
 
-        self.benchmark_group = rospy.get_param('benchmark_group')
+        self.benchmark_group = rospy.get_param('/benchmark_group')
 
         # UI elements
         self.robot_spinbox = self._widget.findChild(QSpinBox, 'robot_spinbox')
@@ -167,7 +167,7 @@ class BenchmarkGui(Plugin):
                 self.testbed_node_available = False
 
         if self.benchmark_group == 'BEAST':
-            some_service_name = '/beast_cart/reset_encoders'
+            some_service_name = 'reset_encoders'
 
             try:
                 rospy.wait_for_service(some_service_name, timeout=0.5)

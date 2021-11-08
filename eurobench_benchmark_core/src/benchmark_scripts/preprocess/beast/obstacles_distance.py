@@ -23,7 +23,7 @@ class PreprocessObject(BasePreprocess):
 
         self.distance_list = list()
 
-        input_topic_name = '/beast_cart/scan_filtered'
+        input_topic_name = 'scan_filtered'
 
         self.scan_sub = rospy.Subscriber(input_topic_name, LaserScan, self.scan_callback)
 

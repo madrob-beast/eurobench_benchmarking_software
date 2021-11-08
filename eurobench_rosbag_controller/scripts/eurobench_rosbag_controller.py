@@ -46,7 +46,7 @@ class RosbagController():
             rospy.logerr('Not Recording')
             return TriggerResponse(False, 'Not Recording')
 
-        rosnode.kill_nodes(['/eurobench_rosbag_recorder_node'])
+        rosnode.kill_nodes([rospy.resolve_name('eurobench_rosbag_recorder_node')])
 
         self.recording_process = None
         self.recording = False
