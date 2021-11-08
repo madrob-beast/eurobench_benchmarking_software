@@ -4,7 +4,7 @@
 
   <group ns="beast_cart">
     <include file="$(find benchmark_gui)/launch/beast_gui.launch" />
-    <node name="rviz" type="rviz" pkg="rviz"/> <!-- args="-d $(env HOME)/w/eurobench_ws/src/eurobench_benchmarking_software/eurobench_benchmark_core/config/beast.rviz" /-->
+    <node name="rviz" type="rviz" pkg="rviz" args="-d $(find eurobench_benchmark_core)/config/beast.rviz" />
   </group>
 
 </launch>
